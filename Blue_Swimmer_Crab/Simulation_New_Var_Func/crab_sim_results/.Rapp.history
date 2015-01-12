@@ -1,0 +1,4594 @@
+mm2<-seq(1/24,2,1/12)#
+IL<-60#
+K0<-1#
+T0<-2#
+T1<-2#
+LINF=170#
+#Draw a distribution at a time point with mean from VB and variance quadratically dependent#
+MLY1<-array(0,12)#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-0#
+  mid1mnt<-1/24#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}#
+#
+MLY2<-array(0,12)#
+IL2<-137.2#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i+12]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-1#
+  mid1mnt<-1/24+11/12#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+#print(KK)#
+MLY2[i]<-IL2 + (LINF-IL2)*(1-exp(-KK))#
+}#
+#
+MLY4<-array(0,12)#
+IL4<-169.1051#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i+12]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-4#
+  mid1mnt<-1/24+11/12#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+#print(KK)#
+MLY4[i]<-IL3 + (LINF-IL3)*(1-exp(-KK))#
+}#
+#####NOW DRAW FROM THE MEANS TO CREATE THE GROUPS#
+a<-10#
+b<- 200*50/10000#
+c<- -50/10000#
+m<-seq(50,200,1)#
+y<-a+b*m+c*m^2#
+plot(m,y)#
+neach<-200#
+G1<-matrix(0,nrow=200,ncol=12)#
+G2<-matrix(0,nrow=200,ncol=12)#
+G3<-matrix(0,nrow=200,ncol=12)#
+#
+for (i in seq(1,12))#
+{#
+#
+var1<-a + b*MLY1[i]+c*MLY1[i]^2#
+var2<-a + b*MLY2[i]+c*MLY2[i]^2#
+var3<-a + b*MLY3[i]+c*MLY3[i]^2#
+G1[,i]<-rnorm(neach,MLY1[i],sqrt(var1))#
+G2[,i]<-rnorm(neach,MLY2[i], sqrt(var2))#
+G3[,i]<-rnorm(neach,MLY4[i], sqrt(var3))#
+#
+}#
+#
+par(mfrow=c(2,6))#
+GS<-rbind(G1,G2,G3)#
+for(i in seq(1,12))#
+{#
+	hist(GS[,i])#
+}
+MLY2<-array(0,12)#
+IL2<-137.2#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i+12]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-1#
+  mid1mnt<-1/24+11/12#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+#print(KK)#
+MLY2[i]<-IL2 + (LINF-IL2)*(1-exp(-KK))#
+}#
+#
+MLY4<-array(0,12)#
+IL4<-169.1051#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i+12]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-4#
+  mid1mnt<-1/24+11/12#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+#print(KK)#
+MLY4[i]<-IL4 + (LINF-IL4)*(1-exp(-KK))#
+}
+a<-10#
+b<- 200*50/10000#
+c<- -50/10000#
+m<-seq(50,200,1)#
+y<-a+b*m+c*m^2#
+plot(m,y)#
+neach<-200#
+G1<-matrix(0,nrow=200,ncol=12)#
+G2<-matrix(0,nrow=200,ncol=12)#
+G3<-matrix(0,nrow=200,ncol=12)#
+#
+for (i in seq(1,12))#
+{#
+#
+var1<-a + b*MLY1[i]+c*MLY1[i]^2#
+var2<-a + b*MLY2[i]+c*MLY2[i]^2#
+var3<-a + b*MLY3[i]+c*MLY3[i]^2#
+G1[,i]<-rnorm(neach,MLY1[i],sqrt(var1))#
+G2[,i]<-rnorm(neach,MLY2[i], sqrt(var2))#
+G3[,i]<-rnorm(neach,MLY4[i], sqrt(var3))#
+#
+}#
+#
+par(mfrow=c(2,6))#
+GS<-rbind(G1,G2,G3)#
+for(i in seq(1,12))#
+{#
+	hist(GS[,i])#
+}
+a<-10#
+b<- 200*50/10000#
+c<- -50/10000#
+m<-seq(50,200,1)#
+y<-a+b*m+c*m^2#
+plot(m,y)#
+neach<-200#
+G1<-matrix(0,nrow=200,ncol=12)#
+G2<-matrix(0,nrow=200,ncol=12)#
+G3<-matrix(0,nrow=200,ncol=12)#
+#
+for (i in seq(1,12))#
+{#
+#
+var1<-a + b*MLY1[i]+c*MLY1[i]^2#
+var2<-a + b*MLY2[i]+c*MLY2[i]^2#
+var3<-a + b*MLY3[i]+c*MLY4[i]^2#
+G1[,i]<-rnorm(neach,MLY1[i],sqrt(var1))#
+G2[,i]<-rnorm(neach,MLY2[i], sqrt(var2))#
+G3[,i]<-rnorm(neach,MLY4[i], sqrt(var3))#
+#
+}#
+#
+par(mfrow=c(2,6))#
+GS<-rbind(G1,G2,G3)#
+for(i in seq(1,12))#
+{#
+	hist(GS[,i])#
+}
+a<-10#
+b<- 200*50/10000#
+c<- -50/10000#
+m<-seq(50,200,1)#
+y<-a+b*m+c*m^2#
+plot(m,y)#
+neach<-200#
+G1<-matrix(0,nrow=200,ncol=12)#
+G2<-matrix(0,nrow=200,ncol=12)#
+G3<-matrix(0,nrow=200,ncol=12)#
+#
+for (i in seq(1,12))#
+{#
+#
+var1<-a + b*MLY1[i]+c*MLY1[i]^2#
+var2<-a + b*MLY2[i]+c*MLY2[i]^2#
+var3<-a + b*MLY4[i]+c*MLY4[i]^2#
+G1[,i]<-rnorm(neach,MLY1[i],sqrt(var1))#
+G2[,i]<-rnorm(neach,MLY2[i], sqrt(var2))#
+G3[,i]<-rnorm(neach,MLY4[i], sqrt(var3))#
+#
+}#
+#
+par(mfrow=c(2,6))#
+GS<-rbind(G1,G2,G3)#
+for(i in seq(1,12))#
+{#
+	hist(GS[,i])#
+}
+dim(GS)#
+600*12#
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-40#
+M02<-40#
+T0 <- 1#
+T1 <- 1#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01,M02)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  if (mm2>8) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  if (mm2>8) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01,M02)#
+{#
+	#mm=2#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  if (mm3==1)  {M01} else if (mm3==13) {M02} else if (mm3>1&mm3<12) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+}#
+#
+VV <- c(var(LL),0,0)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01,M02)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01,M02)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01,M02)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01,M02)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01,M02)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01,M02)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01,M02)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01,M02)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01,M02)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01,M02)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01,M02)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01,M02),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01,M02),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+dim(GS)#
+600*12#
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-40#
+M02<-40#
+T0 <- 1#
+T1 <- 1#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01,M02)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    #strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  if (mm2>8) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  if (mm2>8) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01,M02)#
+{#
+	#mm=2#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  if (mm3==1)  {M01} else if (mm3==13) {M02} else if (mm3>1&mm3<12) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+}#
+#
+VV <- c(var(LL),0,0)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01,M02)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01,M02)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01,M02)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01,M02)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01,M02)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01,M02)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01,M02)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01,M02)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01,M02)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02)))))#
+  }
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01,M02)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5],PARA[6])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01,M02)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01,M02),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01,M02))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01,M02),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01,M02))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+##########BSC SOLUTION SIMULATION##########BSC SOLUTION SIMULATION#
+##########BSC SOLUTION SIMULATION##########BSC SOLUTION SIMULATION#
+##########BSC SOLUTION SIMULATION##########BSC SOLUTION SIMULATION#
+##########BSC SOLUTION SIMULATION##########BSC SOLUTION SIMULATION#
+#Generate three mean curves via von Bertalanffy#
+mm2<-seq(1/24,2,1/12)#
+IL<-60#
+K0<-1#
+T0<-2#
+T1<-2#
+LINF=170#
+#Draw a distribution at a time point with mean from VB and variance quadratically dependent#
+MLY1<-array(0,12)#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-0#
+  mid1mnt<-1/24#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}#
+#
+MLY2<-array(0,12)#
+IL2<-137.2#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i+12]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-1#
+  mid1mnt<-1/24+11/12#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+#print(KK)#
+MLY2[i]<-IL2 + (LINF-IL2)*(1-exp(-KK))#
+}#
+#
+MLY4<-array(0,12)#
+IL4<-169.1051#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i+12]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-4#
+  mid1mnt<-1/24+11/12#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+#print(KK)#
+MLY4[i]<-IL4 + (LINF-IL4)*(1-exp(-KK))#
+}#
+#####NOW DRAW FROM THE MEANS TO CREATE THE GROUPS#
+a<-10#
+b<- 200*50/10000#
+c<- -50/10000#
+m<-seq(50,200,1)#
+y<-a+b*m+c*m^2#
+plot(m,y)#
+neach<-200#
+G1<-matrix(0,nrow=200,ncol=12)#
+G2<-matrix(0,nrow=200,ncol=12)#
+G3<-matrix(0,nrow=200,ncol=12)#
+#
+for (i in seq(1,12))#
+{#
+#
+var1<-a + b*MLY1[i]+c*MLY1[i]^2#
+var2<-a + b*MLY2[i]+c*MLY2[i]^2#
+var3<-a + b*MLY4[i]+c*MLY4[i]^2#
+G1[,i]<-rnorm(neach,MLY1[i],sqrt(var1))#
+G2[,i]<-rnorm(neach,MLY2[i], sqrt(var2))#
+G3[,i]<-rnorm(neach,MLY4[i], sqrt(var3))#
+#
+}#
+#
+par(mfrow=c(2,6))#
+GS<-rbind(G1,G2,G3)#
+for(i in seq(1,12))#
+{#
+	hist(GS[,i])#
+}#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+dim(GS)#
+#
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-50#
+T0 <- 2#
+T1 <- 2#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  strtmid<-1/24#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=2#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+}#
+#
+VV <- c(var(LL),0,0)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  #M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+a
+b
+c
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+dim(GS)#
+#
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-50#
+T0 <- 2#
+T1 <- 2#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  strtmid<-1/24#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=2#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+}#
+#
+VV <- c(10,1,0)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  #M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+MUA
+TAU
+M01
+MUA_AUX[mm]
+MUJ_AUX[mm]
+mm
+KK
+MU2A_AUX
+MUA_AUX
+MUJ_AUX
+MMLIST
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+#NOW THAT WE HAVE THE DATA CAN WE RUN OUR CODE ON IT#
+dim(GS)#
+#
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-50#
+T0 <- 2#
+T1 <- 2#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  #mm <- MMLIST[mm]%%12#
+  strtmid<-1/24#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  #mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=2#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	#mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+}#
+#
+VV <- c(10,1,0)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  #M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+MUJ_AUX
+MUA_AUX
+MU2A_AUX
+M01
+MMLIST
+mm=1#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	#mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))
+KK
+mm
+MMLIST[mm]%%12
+MMLIST
+MMLIST[mm]%%12
+mm
+MON
+1:MON
+mm=1
+MMLIST[mm]%%12
+MLY1<-array(0,12)#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-0#
+  mid1mnt<-1/24#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}
+MLY1
+KK
+MLY1<-array(0,12)#
+  for (i in seq(1,12))#
+  {#
+ # i=2#
+  mm<-mm2[i]#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  yrsold<-0#
+  mid1mnt<-1/24#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-mid1mnt) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*mid1mnt)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*mid1mnt))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+mid1mnt)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+mid1mnt)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+mid1mnt))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+mid1mnt)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+ }#
+ print(KK)#
+MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}
+mm=1#
+  mm2<-MMLIST[mm]#
+  #mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))
+KK
+mm=1#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))
+KK
+dim(GS)#
+#
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-50#
+T0 <- 2#
+T1 <- 2#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  strtmid<-1/24#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)-1/12#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=1#
+  mm2<-MMLIST[mm]#
+  #mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)-1/12#
+   #mm=1#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=1#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	#mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)-1/12#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+}#
+#
+VV <- c(10,1,0)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  #M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+a
+b
+c
+a<-10#
+b<- 200*50/10000#
+c<- -50/10000#
+m<-seq(50,200,1)#
+y<-a+b*m+c*m^2#
+plot(m,y)#
+neach<-200#
+G1<-matrix(0,nrow=200,ncol=12)#
+G2<-matrix(0,nrow=200,ncol=12)#
+G3<-matrix(0,nrow=200,ncol=12)#
+#
+for (i in seq(1,12))#
+{#
+#
+var1<-a + b*MLY1[i]+c*MLY1[i]^2#
+var2<-a + b*MLY2[i]+c*MLY2[i]^2#
+var3<-a + b*MLY4[i]+c*MLY4[i]^2#
+G1[,i]<-rnorm(neach,MLY1[i],sqrt(var1))#
+G2[,i]<-rnorm(neach,MLY2[i], sqrt(var2))#
+G3[,i]<-rnorm(neach,MLY4[i], sqrt(var3))#
+#
+}#
+#
+par(mfrow=c(2,6))#
+GS<-rbind(G1,G2,G3)#
+for(i in seq(1,12))#
+{#
+	hist(GS[,i])#
+}
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 3#
+LINF <- 200#
+#M0 <- 20#
+M01<-50#
+T0 <- 2#
+T1 <- 2#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  strtmid<-1/24#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)-1/12#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=1#
+  mm2<-MMLIST[mm]#
+  #mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)-1/12#
+   #mm=1#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=1#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	#mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)-1/12#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+}#
+#
+VV <- c(10,1,-0.001)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  #M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+MON <- 12#
+MONTHS<-rep(seq(1,12),each=200)#
+MM<-rbind(matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200),matrix(MONTHS,ncol=12,nrow=200))#
+MM <-as.numeric(MM)#
+LL<-as.numeric(GS)#
+#
+#PARAV<-c(1,1,1)#
+NN <- length(MM)#
+PI1 <- rep(1/3,MON)#
+PI2 <- rep(1/3,MON)#
+K0 <- 2#
+LINF <- 200#
+#M0 <- 20#
+M01<-50#
+T0 <- 3#
+T1 <- 2#
+MMLIST <- seq(1,12)#
+#
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=2#
+  mm2<-MMLIST[mm]#
+  mm <- MMLIST[mm]%%12#
+  strtmid<-1/24#
+  yrsold<-4#
+  mm=(mm/12)+(yrsold +1/24)-1/12#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+yrsold#
+    strtmid<-1/24#
+    r2=1-acos(u1)/(2*pi)+yrsold#
+    #Regime#
+	zMid1=K0*((r1-yrsold)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-2))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-yrsold))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-yrsold))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-yrsold)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-yrsold)))#
+    KK2yr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm<r1) {KK = KK2yr + K0*(mm-(yrsold+strtmid)) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK2yr + K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid)))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-(yrsold+strtmid)) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*(yrsold+strtmid))) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*(yrsold+strtmid)))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK2yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=1#
+  mm2<-MMLIST[mm]#
+  #mm <- MMLIST[mm]%%12#
+  mm=(mm/12)+(1+1/24)-1/12#
+   #mm=1#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  strtmid<-1/24#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)+1#
+    r2=1-acos(u1)/(2*pi)+1#
+    #Regime#
+	zMid1=K0*((r1-1)-strtmid) + (T0/(2*pi))*(sin(2*pi*(r1-1))-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*(r1-1))-cos(2*pi*strtmid))#
+    zEnd1=K0*(1.125-(r2-1))     + (T0/(2*pi))*(sin(2*pi*1.125)-sin(2*pi*(r2-1)))     - (T1/(2*pi))*(cos(2*pi*1.125)-cos(2*pi*(r2-1)))#
+    KK1yr<-zEnd1+zMid1#
+    #Those less than r1#
+    if (mm<r1) {KK = KK1yr + K0*(mm-1.125) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*1.125))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK= KK1yr + K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-1.125) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*1.125)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*1.125))#
+    zEnd=K0*(mm-r2)     + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KK1yr#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=1#
+	#mm=1.125#
+	mm3<-MMLIST[mm]#
+	#mm <- MMLIST[mm]%%12#
+	mm=mm/12+(1/24)-1/12#
+	strtmid<-1/24#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+    b=2*K0*T0#
+    c=-(T1^2)+K0^2#
+    u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+    u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+    r1=acos(u2)/(2*pi)#
+    r2=1-acos(u1)/(2*pi)#
+    #Regime#
+#
+    #Those less than r1#
+    if (mm<r1) {KK = K0*(mm-strtmid) +   (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}#
+    #Those between r1 and r2#
+    if (mm>r1&mm<r2) {KK=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))}#
+    #Those after r2#
+    if (mm>r2)#
+    {#
+    zMid=K0*(r1-strtmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strtmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strtmid))#
+    zEnd=K0*(mm-r2)    + (T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*r2))#
+    KK<-zEnd+zMid#
+    }#
+  } else {KK=K0*(mm-strtmid)+(T0/(2*pi))*(sin(2*pi*mm)-sin(2*pi*strtmid))-(T1/(2*pi))*(cos(2*pi*mm)-cos(2*pi*strtmid))}	#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#
+TAU <- list()#
+for (mm in 1:(MON))#
+{#
+  TAU[[mm]] <- matrix(1/3,NN,3)#
+}#
+#
+MU2A_AUX <- c()#
+MUA_AUX <- c()#
+MUJ_AUX <- c()#
+for (mm in 1:MON)#
+{#
+  MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+  MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+  MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+}#
+#
+VV <- c(10,1,-0.001)#
+VARJ <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUJ(mm,K0,T0,T1,LINF,M01)+VV[3]*MUJ(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VARA <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MUA(mm,K0,T0,T1,LINF,M01)+VV[3]*MUA(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+VAR2A <- function(mm,VV,K0,T0,T1,LINF,M01)#
+{#
+	max(VV[1]+VV[2]*MU2A(mm,K0,T0,T1,LINF,M01)+VV[3]*MU2A(mm,K0,T0,T1,LINF,M01)^2,1)#
+}#
+#
+LOGLIKE <- 0#
+  for (mm in 1:MON)#
+  {#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+  }#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+######WHILE LOOP BEGINS######WHILE LOOP BEGINS######WHILE LOOP BEGINS#
+TOL <- 10^-6#
+LOGOLD <- -Inf#
+#
+while (LOGLIKE - LOGOLD > TOL)#
+{#
+  LOGOLD <- LOGLIKE#
+#
+  #MUA_AUX <- c()#
+  #MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+    #MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    #MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+    #Compute the TAUs for each month#
+    TAU[[mm]][,1] <- PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) +(1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+   TAU[[mm]][,2] <-  PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01)))/#
+                         (PI1[mm]*dnorm(LL,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))))#
+    TAU[[mm]][,3] <-1-(TAU[[mm]][,1]+TAU[[mm]][,2])#
+    PI1[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,1])/sum(MM==MMLIST[mm])#
+    PI2[mm] <- sum((MM==MMLIST[mm])*TAU[[mm]][,2])/sum(MM==MMLIST[mm])#
+  }#
+   PARA <- c(K0,T0,T1,LINF,M01)#
+  OPTIFUN <- function(PARA)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VAR2A(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))+PI2[mm]*dnorm(LL2,MUA(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARA(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ(mm,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5]),sqrt(VARJ(mm,VV,PARA[1],PARA[2],PARA[3],PARA[4],PARA[5])))))#
+	}#
+	-LOGLIKE#
+  }#
+  OPTIM <- optim(PARA,OPTIFUN)#,method="BFGS")#
+  K0 <- OPTIM$par[1]#
+  T0 <- OPTIM$par[2]#
+  T1 <- OPTIM$par[3]#
+  LINF <- OPTIM$par[4]#
+  M01 <- OPTIM$par[5]#
+  #M02<-OPTIM$par[6]#
+  MU2A_AUX <- c()#
+  MUA_AUX <- c()#
+  MUJ_AUX <- c()#
+  for (mm in 1:MON)#
+  {#
+  	#mm=1#
+  	#Compute the means for each month #
+    MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01)#
+    #MU2A_AUX[mm] <- LINF#
+    MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01)#
+    MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01)#
+  }#
+  PARA2 <- VV#
+  VAROPTIFUN <- function(PARA2)#
+  {#
+  	LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,PARA2,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,PARA2,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,PARA2,K0,T0,T1,LINF,M01)))))#
+	}#
+	-LOGLIKE#
+  }#
+   OPTIM2 <- optim(PARA2,VAROPTIFUN)#
+   VV <- OPTIM2$par#
+	  LOGLIKE <- 0#
+	  for (mm in 1:MON)#
+	  {#
+	#Compute the likelihood given these new updated valyes#
+	LL2<-LL[which(MM==MMLIST[mm])]#
+	LOGLIKE <- LOGLIKE + sum(log( PI1[mm]*dnorm(LL2,MU2A_AUX[mm],sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01)))+PI2[mm]*dnorm(LL2,MUA_AUX[mm],sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))) + (1-(PI1[mm]+PI2[mm]))*dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01)))))#
+	}#
+  print(c(LOGLIKE,LOGLIKE-LOGOLD))#
+  print(c(PARA,PARA2))#
+  par(mfrow = c(3,5))#
+  XX <- 0:200#
+  xlabNam<-c("Feb., 1985","Mar., 1985","Apr., 1985","May, 1985","Jun., 1985","Jul, 1985","Aug., 1985","Feb., 1986","Mar., 1986","Apr., 1986","May, 1986")#
+  for (mm in 1:MON)#
+  {#
+    hist(LL[which(MM==MMLIST[mm])],breaks=30,prob=T,xlim=c(20,210),ylim=c(0,0.055),xlab=xlabNam[mm],ylab="",main='')#
+    lines(XX,PI1[mm]*dnorm(XX,MU2A(mm,K0,T0,T1,LINF,M01),sqrt(VAR2A(mm,VV,K0,T0,T1,LINF,M01))),col='red',lwd=2.5)#
+    lines(XX,PI2[mm]*dnorm(XX,MUA(mm,K0,T0,T1,LINF,M01),sqrt(VARA(mm,VV,K0,T0,T1,LINF,M01))),col='green',lwd=2.5)#
+    lines(XX,(1-(PI1[mm]+PI2[mm]))*dnorm(XX,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01))),col='blue',lwd=2.5)#
+  }#
+  XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)#
+  BLAH <- 50:160#
+  plot(BLAH,VV[1]+VV[2]*BLAH+VV[3]*BLAH^2,type='l',xlab="Mean length (mm)", ylab="Variance",lwd=2.5)#
+}
+MU2A_AUX
+MUA_AUX
+MUJ_AUX
+PI1
+PI2
+MLY1
+MLY2
+K0<-1#
+T0<-2#
+T1<-2#
+LINF=170#
+ XX2 <- seq(0,1,length.out=100)#
+  YY <- K0 + T0*cos(2*pi*XX2) + T1*sin(2*pi*XX2)#
+  plot(XX2,((YY+abs(YY))/2),type='l',xlab="Fraction of a year since Jan 1",ylab="k",lwd=2.5)
+K0
+mm2
+mm2<-seq(1/24,2,1/12)
+mm2
+mm2<-seq(1/24,2,1/12)
+mm2
+mm2<-seq(1/24,2,1/12)#
+IL<-60#
+K0<-1#
+T0<-2#
+T1<-2#
+LINF<-170
+mm2
+mm<-mm2[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24
+i=1#
+  	mm<-mm2[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24
+if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    	#Those less than r1#
+	    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    	#Those between r1 and r2#
+	    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    	#Those after r2#
+	    	if (mm2>r2)#
+	    		{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    		}#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))
+mm<-mm2[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1
+a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])
+zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)
+zMid1
+zEnd1
+KKyr<-yrsold*(zEnd1+zMid1)
+KKyr
+if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}
+# The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  		}
+mm
+# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  		} #
+	 		else #
+	 		{#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))
+months<-seq(1/24,2,1/12)#
+IL<-60#
+K0<-1#
+T0<-2#
+T1<-2#
+LINF<-170
+# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}
+KK
+mm2
+IL
+MLY1
+MLY1<-array(0,12) # Initialise the array to store the mean values#
+#
+# Cycle through each month and calculate the mean dependent on the curve#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}
+MLY1
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY2<-array(0,12)#
+IL2<-137.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+MLY2
+# Calculate a set of means for the juveniles following the seasonal von Bertallanffy curve#
+#
+MLY1<-array(0,12) # Initialise the array to store the mean values#
+#
+# Cycle through each month and calculate the mean dependent on the curve#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}#
+## Calculate a set of means for the adults following the seasonal von Bertallanffy curve#
+## Calculate a set of means for the adults following the seasonal von Bertallanffy curve#
+#
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY2<-array(0,12)#
+IL2<-137.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+MLY2
+KK
+MLY1
+MLY2<-array(0,12)#
+IL2<-137.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mmval/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}
+T1
+T0
+K0
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+MLY2
+LINF
+months<-seq(1/24,2,1/12)#
+IL<-60#
+K0<-1#
+T0<-2#
+T1<-2#
+LINF<-190#
+# Calculate a set of means for the juveniles following the seasonal von Bertallanffy curve#
+#
+MLY1<-array(0,12) # Initialise the array to store the mean values#
+#
+# Cycle through each month and calculate the mean dependent on the curve#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}#
+## Calculate a set of means for the adults following the seasonal von Bertallanffy curve#
+## Calculate a set of means for the adults following the seasonal von Bertallanffy curve#
+#
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY2<-array(0,12)#
+IL2<-137.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+rm(list=ls())
+# First set the directory to write out the results#
+#
+setwd("/ibscratch/wrayvisscher/Luke/BSC_RcodesData/Simulation200")#
+# Generate three mean curves via von Bertalanffy#
+# Generate three mean curves via von Bertalanffy#
+# Set some initial paramters that are to be estimated in the next section#
+#
+months<-seq(1/24,2,1/12)#
+IL<-60#
+K0<-1#
+T0<-2#
+T1<-2#
+LINF<-190#
+# Calculate a set of means for the juveniles following the seasonal von Bertallanffy curve#
+#
+MLY1<-array(0,12) # Initialise the array to store the mean values#
+#
+# Cycle through each month and calculate the mean dependent on the curve#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-0#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))#
+}
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY2<-array(0,12)#
+IL2<-137.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  	} else {#
+	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )#
+	 		}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+yrsold
+min(g)
+max(g)
+# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}
+print(KK)
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+r1
+r2
+LINF
+MLY2
+MLY1
+## Calculate a set of means for the adults following the seasonal von Bertallanffy curve#
+## Calculate a set of means for the adults following the seasonal von Bertallanffy curve#
+#
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY2<-array(0,12)#
+IL2<-151.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+		print(c(r1, r2, mm2)#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2/12)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+		print(c(r1, r2, mm2))#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+		print(c(r1, r2, mm2))#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY2<-array(0,12)#
+IL2<-151.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+		print(c(r1, r2, mm2))#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+MLY2
+MLY2<-array(0,12)#
+IL2<-151.2#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-1#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+		print(c(r1, r2, mm2))#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  print(KK)#
+	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))#
+}
+MLY3<-array(0,12)
+MLY2
+# Set the empty set of means and the initial length for the adult group#
+#
+MLY3<-array(0,12)#
+IL3<-187.6#
+#
+for (i in seq(1,12))#
+	{#
+	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation#
+  	mm2<-months[i]#
+	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  	#plot(t,g)#
+  	Isneg<-min(g)#
+  	Isneg2<-max(g)#
+  	yrsold<-2#
+  	mid1mnt<-1/24#
+  	strmnth<-0#
+	strmid<-strmnth/12+1/24+yrsold#
+	endmid<-strmid+1#
+	mm2=(mm2)+1/24+yrsold#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+		#print(c(r1, r2, mm2))#
+	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #print(KKyr)#
+	    # The integral of those months less than root 1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    # The integral of those months less than root 1 between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    # The integral of those months after root 2#
+	    if (mm2>r2)#
+	    	{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    	}#
+	  #print(KK)#
+	  MLY3[i]<-(IL3 + (LINF-IL3)*(1-exp(-KK)))#
+}
+MLY3
+file_names<-read.table("~/Dropbox/AAUni/APhD/Blueswimmer/Simulation_New_Var_Func/crab_sim_results/file_names_crab_sim.txt",header=F)
+para_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi1_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi2_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu1_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu2_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)
+setwd("~/Dropbox/AAUni/APhD/Blueswimmer/Simulation_New_Var_Func/crab_sim_results/")
+for (i in seq(1,dim(file_names)[1]))#
+{#
+	fil_name=as.character(file_names[i,])			# Determine the file name#
+	results<-read.table(fil_name,header=F,fill=T)	# Read in the results for this file#
+	para_mat[i,]<-results[1,]#
+	pi1_mat[i,]<-results[2,]#
+	pi2_mat[i,]<-results[3,]#
+	pi3_mat[i,]<-results[4,]#
+	mu1_mat[i,]<-results[5,]#
+	mu2_mat[i,]<-results[6,]#
+	mu3_mat[i,]<-results[7,]#
+}
+i=1
+fil_name=as.character(file_names[i,])			# Determine the file name
+fil_name
+results<-read.table(fil_name,header=F,fill=T)	# Read in the results for this file
+results
+results[1,]
+results[2,]
+pi1_mat[i,]<-results[2,]
+pi2_mat[i,]<-results[3,]
+para_mat[i,]<-results[1,]
+pi1_mat
+dim(file_names)[1]
+para_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi1_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi2_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu1_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu2_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)
+pi1_mat[i,]
+i=1#
+	fil_name=as.character(file_names[i,])			# Determine the file name#
+	results<-read.table(fil_name,header=F,fill=T)	# Read in the results for this file#
+	para_mat[i,]<-results[1,]#
+	pi1_mat[i,]<-results[2,]#
+	pi2_mat[i,]<-results[3,]#
+	pi3_mat[i,]<-results[4,]#
+	mu1_mat[i,]<-results[5,]#
+	mu2_mat[i,]<-results[6,]#
+	mu3_mat[i,]<-results[7,]
+mu3_mat
+para_mat[i,]
+seq(1,dim(file_names)[1])
+results[7,]
+results[6,]
+results[5,]
+results[4,]
+results[3,]
+pi1_mat[i,]<-results[2,]
+results[2,]
+results[1,]
+fil_name
+results
+i=1
+fil_name=as.character(file_names[i,])			# Determine the file name
+results<-read.table(fil_name,header=F,fill=T)	# Read in the results for this file
+para_mat[i,]<-results[1,]
+results[1,]
+para_mat[i,]
+para_mat[i,]
+para_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi1_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi2_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+pi3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu1_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu2_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)#
+mu3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)
+i=1#
+	fil_name=as.character(file_names[i,])			# Determine the file name#
+	results<-read.table(fil_name,header=F,fill=T)	# Read in the results for this file#
+	para_mat[i,]<-results[1,]
+para_mat
+pi1_mat[i,]
+para_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)
+i=1#
+	fil_name=as.character(file_names[i,])			# Determine the file name#
+	results<-read.table(fil_name,header=F,fill=T)	# Rea
+results[1,]
+is.numeric(results[1,])
+para_mat[i,]<-as.numeric(results[1,])
+para_mat
+para_mat[i,]
+for (i in seq(1,dim(file_names)[1]))#
+{#
+	#i=1#
+	fil_name=as.character(file_names[i,])			# Determine the file name#
+	results<-read.table(fil_name,header=F,fill=T)	# Read in the results for this file#
+	para_mat[i,]<-as.numeric(results[1,])#
+	pi1_mat[i,]<-as.numeric(results[2,])#
+	pi2_mat[i,]<-as.numeric(results[3,])#
+	pi3_mat[i,]<-as.numeric(results[4,])#
+	mu1_mat[i,]<-as.numeric(results[5,])#
+	mu2_mat[i,]<-as.numeric(results[6,])#
+	mu3_mat[i,]<-as.numeric(results[7,])#
+}
+para_mat
+colMeans(para_mat)
+apply(para_mat,2,sd)
+summary(para_mat[,4])
+summary(para_mat[,3])
+summary(para_mat[,2])
+summary(para_mat[,1])

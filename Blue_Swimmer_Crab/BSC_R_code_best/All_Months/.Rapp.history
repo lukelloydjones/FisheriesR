@@ -1,0 +1,25 @@
+#Set the necessary working directories#
+	#setwd("/Users/uqllloyd/Dropbox/AAUni/APhD/Blueswimmer/CrabStuff2withMMAlg/RcodesData")#
+	setwd("~/Dropbox/AAUni/APhD/Blueswimmer/RcodeData_03:10:2014/All_Months/")#
+	#Remove any old objects#
+	rm(list = ls())#
+	#DATA PRELIMINARIES#
+	#Read in the data set on the asymptotic males that was gathered through pots#
+	LFD_bigMalesFemales<-read.table("LFD_bigMalesFem",header=T)#
+	#Pull out the lengths and the dates from these data files#
+	Dates1<-as.Date(LFD_bigMalesFemales$Date,"%d/%m/%y")               #
+	Lengths1<-LFD_bigMalesFemales$Carapacewidth#
+	#Read in the trawl data on males that contains juvenile recruitment and adults#
+	LFD<-read.table("LFD")#
+	#which(LFD$Sex==1)#
+	#Pull out the lengths and the dates from these data files#
+	Dates2<-as.Date(LFD$Date,"%d/%m/%Y")#
+	Lengths2<-LFD$Carapace.width#
+	#Concatenate the necessary elements from each file into a common dates and lengths array#
+	Dates <- c(Dates2,Dates1)#
+	Lengths <- c(Lengths2,Lengths1)#
+	#Pull out the year and month information from these dates#
+	YEAR <- format(Dates,'%Y')#
+	MONTHS <- format(Dates,'%m')
+(as.numeric(MONTHS)
+as.numeric(MONTHS)
