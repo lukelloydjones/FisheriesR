@@ -11,7 +11,7 @@
 
 # Read in the file containing all the names of the simulation results
 
-file_names<-read.table("~/Dropbox/AAUni/APhD/Blueswimmer/Simulation_New_Var_Func/crab_sim_results/file_names_crab_sim.txt",header=F)
+file_names<-read.table("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab/Simulation_New_Var_Func/crab_sim_results/file_names_crab_sim.txt",header=F)
 
 
 # For each of the file read them in and process into distinct matrices for the parameters of interest
@@ -29,7 +29,7 @@ mu3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)
 
 # Set the working directory
 
-setwd("~/Dropbox/AAUni/APhD/Blueswimmer/Simulation_New_Var_Func/crab_sim_results/")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab/Simulation_New_Var_Func/crab_sim_results/")
 
 for (i in seq(1,dim(file_names)[1]))
 {

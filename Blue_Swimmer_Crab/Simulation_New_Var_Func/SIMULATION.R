@@ -11,7 +11,7 @@ rm(list=ls())
 
 # First set the directory to write out the results
 
-setwd("/ibscratch/wrayvisscher/Luke/BSC_RcodesData/Simulation200")
+#setwd("/ibscratch/wrayvisscher/Luke/BSC_RcodesData/Simulation200")
 
 
 # Generate three mean curves via von Bertalanffy
@@ -20,7 +20,7 @@ setwd("/ibscratch/wrayvisscher/Luke/BSC_RcodesData/Simulation200")
 
 # Set some initial paramters that are to be estimated in the next section
 
-months<-seq(1/24,1,1/12)
+months<-seq(0,1,1/366)
 IL<-60
 K0<-1
 T0<-2
@@ -31,29 +31,22 @@ LINF<-190
 
 # Calculate a set of means for the juveniles following the seasonal von Bertallanffy curve
 
-MLY1<-array(0,12) # Initialise the array to store the mean values
+KK_store<-array(0,length(months)) # Initialise the array to store the mean values
 
 # Cycle through each month and calculate the mean dependent on the curve
 
-for (i in seq(1,12))
+for (i in seq(1,length(months)))
 	{
 	
 	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation
-	
+	#i=13
   	mm2<-months[i]
-	t<-seq(0,1,0.01)
-	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)
-  	#plot(t,g)
-  	Isneg<-min(g)
-  	Isneg2<-max(g)
   	yrsold<-0
-  	mid1mnt<-1/24
   	strmnth<-0
-	strmid<-strmnth/12+1/24+yrsold
-	endmid<-strmid+1
+	strmid<-0
+
+	# Calculate the roots 
 	
-	  if (Isneg<0&Isneg2>0)
-	  {
 	    a=T0^2+T1^2
 		b=2*K0*T0
 		c=-(T1^2)+K0^2
@@ -66,23 +59,24 @@ for (i in seq(1,12))
 		roots<-c(r11, r12, r21, r22)
 		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)
 		gmin<-round(groot)
-		r1<-min(roots[which(gmin==0)])
-		r2<-max(roots[which(gmin==0)])
 		
+		if (months[i]>=1&months[i]<=2){
+			r1<-min(roots[which(gmin==0)])+1
+			r2<-max(roots[which(gmin==0)])+1} else if (months[i]>=2&months[i]<=3) {
+			r1<-min(roots[which(gmin==0)])+2
+			r2<-max(roots[which(gmin==0)])+2} else {
+			r1<-min(roots[which(gmin==0)])
+		    r2<-max(roots[which(gmin==0)])}
 		
-	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero
-	    
-		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
-	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))
-	    KKyr<-yrsold*(zEnd1+zMid1)
+		#print(c(r1,r2))
 	    
 	    # The integral of those months less than root 1
 	    
-	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}
+	    if (mm2<r1) {KK = K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}
 	    	
-	    # The integral of those months less than root 1 between r1 and r2
+	    # The integral of those months between root 1 and root 2
 	    
-	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}
+	    if (mm2>r1&mm2<r2) {KK=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}
 	    
 	    # The integral of those months after root 2
 	    
@@ -90,175 +84,25 @@ for (i in seq(1,12))
 	    	{
 	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
 	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))
-	    		KK<-zEnd+zMid+KKyr
+	    		KK<-zEnd+zMid
 	    	}
-	    
-	  	} else {
-	 		
-	 		KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )
-	 		}
 	
 	  print(KK)
-	  MLY1[i]<-(IL + (LINF-IL)*(1-exp(-KK)))
+	  KK_store[i]<-KK
 	
 	
 }
 
+KK_yr1=KK_store[1:365]
+KK_yr2=KK_store[1:365]+1.44099
+KK_yr3=KK_store[1:365]+2*1.44099
+MLY1<-(IL + (LINF-IL)*(1-exp(-KK_yr1)))
+MLY2<-(IL + (LINF-IL)*(1-exp(-KK_yr2)))
+MLY3<-(IL + (LINF-IL)*(1-exp(-KK_yr3)))
 
-
-## Calculate a set of means for the adults following the seasonal von Bertallanffy curve
-## Calculate a set of means for the adults following the seasonal von Bertallanffy curve
-
-# Set the empty set of means and the initial length for the adult group
-
-MLY2<-array(0,12)
-IL2<-60
-
-for (i in seq(1,12))
-	{
-	
-	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation
-	
-  	mm2<-months[i]
-	t<-seq(0,1,0.01)
-	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)
-  	#plot(t,g)
-  	Isneg<-min(g)
-  	Isneg2<-max(g)
-  	yrsold<-1
-  	mid1mnt<-1/24
-  	strmnth<-0
-	strmid<-strmnth/12+1/24+yrsold
-	endmid<-strmid+1
-	mm2=(mm2)+1/24+yrsold
-	
-	
-	    a=T0^2+T1^2
-		b=2*K0*T0
-		c=-(T1^2)+K0^2
-		u1=(-b+sqrt(b^2-4*a*c))/(2*a)
-		u2=(-b-sqrt(b^2-4*a*c))/(2*a)
-		r11=1-acos(u1)/(2*pi)+yrsold
-		r12=acos(u1)/(2*pi)+yrsold
-		r21=1-acos(u2)/(2*pi)+yrsold
-		r22=acos(u2)/(2*pi)+yrsold
-		roots<-c(r11, r12, r21, r22)
-		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)
-		gmin<-round(groot)
-		r1<-min(roots[which(gmin==0)])
-		r2<-max(roots[which(gmin==0)])
-		
-		#print(c(r1, r2, mm2))
-		
-	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero
-	    
-		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
-	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))
-	    KKyr<-yrsold*(zEnd1+zMid1)
-	    #print(KKyr)
-	    
-	    # The integral of those months less than root 1
-	    
-	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}
-	    	
-	    # The integral of those months less than root 1 between r1 and r2
-	    
-	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}
-	    
-	    # The integral of those months after root 2
-	    
-	    if (mm2>r2)
-	    	{
-	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
-	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))
-	    		KK<-zEnd+zMid+KKyr
-	    	}
-	    
-	    
-	  print(KK)
-	  MLY2[i]<-(IL2 + (LINF-IL2)*(1-exp(-KK)))
-	
-	
-}
-
-
-
-## Calculate a set of means for the super adults following the seasonal von Bertallanffy curve
-## Calculate a set of means for the super adults following the seasonal von Bertallanffy curve
-
-# Set the empty set of means and the initial length for the adult group
-
-
-MLY3<-array(0,12)
-IL3<-60
-
-for (i in seq(1,12))
-	{
-	
-	# Calculate if the curve needs to be integrated or not and set the initial month which will be January for the simulation
-	
-  	mm2<-months[i]
-	t<-seq(0,1,0.01)
-	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)
-  	#plot(t,g)
-  	Isneg<-min(g)
-  	Isneg2<-max(g)
-  	yrsold<-2
-  	mid1mnt<-1/24
-  	strmnth<-0
-	strmid<-strmnth/12+1/24+yrsold
-	endmid<-strmid+1
-	mm2=(mm2)+1/24+yrsold
-	
-	
-	    a=T0^2+T1^2
-		b=2*K0*T0
-		c=-(T1^2)+K0^2
-		u1=(-b+sqrt(b^2-4*a*c))/(2*a)
-		u2=(-b-sqrt(b^2-4*a*c))/(2*a)
-		r11=1-acos(u1)/(2*pi)+yrsold
-		r12=acos(u1)/(2*pi)+yrsold
-		r21=1-acos(u2)/(2*pi)+yrsold
-		r22=acos(u2)/(2*pi)+yrsold
-		roots<-c(r11, r12, r21, r22)
-		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)
-		gmin<-round(groot)
-		r1<-min(roots[which(gmin==0)])
-		r2<-max(roots[which(gmin==0)])
-		
-		#print(c(r1, r2, mm2))
-		
-	    # Calculate the integral up until the first root and then after the first root as the integral between the roots is zero
-	    
-		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
-	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))
-	    KKyr<-yrsold*(zEnd1+zMid1)
-	    #print(KKyr)
-	    
-	    # The integral of those months less than root 1
-	    
-	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}
-	    	
-	    # The integral of those months less than root 1 between r1 and r2
-	    
-	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}
-	    
-	    # The integral of those months after root 2
-	    
-	    if (mm2>r2)
-	    	{
-	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
-	    		zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))
-	    		KK<-zEnd+zMid+KKyr
-	    	}
-	    
-	    
-	  print(KK)
-	  MLY3[i]<-(IL3 + (LINF-IL3)*(1-exp(-KK)))
-	
-	
-}
-
+MLY1 <- colMeans(matrix(MLY1,ncol=12,nrow=30))
+MLY2 <- colMeans(matrix(MLY2,ncol=12,nrow=30))
+MLY3 <- colMeans(matrix(MLY3,ncol=12,nrow=30))
 
 ## Draw from the means to create the groups. Groups are drawn from a normal distribution to mimic our assumptions in real data
 ## Draw from the means to create the groups. Groups are drawn from a normal distribution to mimic our assumptions in real data
@@ -269,7 +113,7 @@ for (i in seq(1,12))
 
 # Variance function test to see shape
 
-VV<-c(30,0.03,-20,900)
+VV<-c(40,0.03,4,900)
 mu<-seq(0,200,0.5)
 y=VV[1]*mu*exp(-VV[2]*mu)+exp(VV[3]*(1-exp(-VV[4]*mu)))
 plot(mu,y)
@@ -281,7 +125,7 @@ P1<-c(0.50, 0.40, 0.30, 0.20, 0.10, 0.05, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02)
 P3<-c(0.1, 0.15, 0.1, 0.08, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09)
 P2<-1-(P1+P3)
 
-N=500 # Number of total individuals
+N=1000 # Number of total individuals
 N1<-as.integer(N*P1)
 N2<-as.integer(N*P2)
 N3<-N-(N1+N2)
@@ -337,7 +181,7 @@ M01<-10
 T0 <- 2
 T1 <- 2
 MMLIST <- seq(0,11)
-VV <- c(20,0.04,-25,900)										#Initialise the starting values for the variance quadratic update
+VV <- c(20,0.04,3.8,900)										#Initialise the starting values for the variance quadratic update
 
 ## FUNCTIONS
 ## FUNCTIONS
