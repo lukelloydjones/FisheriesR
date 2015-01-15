@@ -11,7 +11,7 @@
 
 # Read in the file containing all the names of the simulation results
 
-file_names<-read.table("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/Simulation_New_Var_Func/Sim_Move_Res/Sim_Names.txt",header=F)
+file_names<-read.table("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/Simulation_New_Var_Func/Sim_Move_Res_Old/Sim_Names.txt",header=F)
 
 
 # For each of the files read them in and process into distinct matrices for the parameters of interest
@@ -27,7 +27,7 @@ mu3_mat<-matrix(0,nrow=dim(file_names)[1],ncol=12)
 
 # Set the working directory for the simulation results
 
-setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/Simulation_New_Var_Func/Sim_Move_Res")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/Simulation_New_Var_Func/Sim_Move_Res_Old")
 
 
 # Run through all the file names for each simulation and put each of the lines in the respective matrix above
@@ -51,7 +51,7 @@ for (i in seq(1,dim(file_names)[1]))
 
 # Model estimates
 
-mean_ests<-colMeans(para_mat[-1,])
+mean_ests<-colMeans(para_mat[-1,-c(10,11,12)])
 std_errs<-apply(para_mat[-1,],2,sd)
 
 
@@ -73,8 +73,8 @@ mu3_mat_means<-colMeans(mu3_mat[-1,])
 
 # Model estimates
 
-paste(as.character(signif(mean_ests,3)),collapse=" & ")
-paste(as.character(signif(std_errs,3)),collapse=" & ")
+paste(as.character(signif(mean_ests,4)),collapse=" & ")
+paste(as.character(signif(std_errs,4)), collapse=" & ")
 
 # Mixing proportion estimates
 
