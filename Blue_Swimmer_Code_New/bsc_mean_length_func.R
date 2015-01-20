@@ -93,12 +93,12 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
 	 
   if (month > 11) {
     
-    mu.yr.2 + (linf - mu.yr.2)*(1-exp(-integral))
+    mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral))
     
   } else {
  	
  	# For the months in the first year 
-    mu.yr.1 + (linf - mu.yr.1)*(1-exp(-integral))
+    mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral))
   }
 	
 	

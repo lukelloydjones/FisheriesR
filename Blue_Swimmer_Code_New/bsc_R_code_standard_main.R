@@ -12,6 +12,15 @@
 ###############################################################################
 
 
+# Source the function files needed
+# --------------------------------
+
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")
+source("bsc_seas_integral_func.R")
+source("bsc_mean_length_func.R")
+source("bsc_seas_root_func.R")
+source("bsc_variance_func.R")
+
 # Remove any objects to clear the slate
 
 rm(list = ls( ))
@@ -73,9 +82,9 @@ lfd.months <- format(lfd.dates, '%m')
 # i.e., those that don't contain recruitment
 
 str.month.yr.1 <- 2
-end.month.yr.1 <- 2
+end.month.yr.1 <- 8
 
-str.month.yr.2 <- 8
+str.month.yr.2 <- 2
 end.month.yr.2 <- 5
 
 lfd.85.feb.aug <- which((lfd.year == '1985') & 
@@ -105,13 +114,17 @@ k0       <- 1		 						# K0 average K
 linf     <- 200								# Asym length
 mu.yr.1  <- 40								# First month's average length yr 1
 mu.yr.2  <- 40								# First month's average length yr 2
-theta.1  <- 0.2								# Seasonality parameter 1
-theta.2  <- 0.1								# Seasonality parameter 2
+theta.1  <- 2								# Seasonality parameter 1
+theta.2  <- 2								# Seasonality parameter 2
 var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
 
+# Initialise the taus 
+# -------------------	
 	
-	
-	
+
+# Initialise the means for each of the three groups
+
+mean.2.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
 	
 	
 	
