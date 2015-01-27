@@ -11,6 +11,9 @@
 ###############################################################################
 ###############################################################################
 
+# Remove any objects to clear the slate
+
+rm(list = ls( ))
 
 # Source the function files needed
 # --------------------------------
@@ -21,14 +24,9 @@ source("bsc_mean_length_func.R")
 source("bsc_seas_root_func.R")
 source("bsc_variance_func.R")
 
-# Remove any objects to clear the slate
-
-rm(list = ls( ))
-
 
 # Data preliminaries
 # ------------------
-
 
 # Set the working directories
 
@@ -114,22 +112,50 @@ k0       <- 1		 						# K0 average K
 linf     <- 200								# Asym length
 mu.yr.1  <- 40								# First month's average length yr 1
 mu.yr.2  <- 40								# First month's average length yr 2
-theta.1  <- 2								# Seasonality parameter 1
-theta.2  <- 2								# Seasonality parameter 2
+theta.1  <- 1.0	     						# Seasonality parameter 1
+theta.2  <- 1.0								# Seasonality parameter 2
 var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+
 
 # Initialise the taus 
 # -------------------	
-	
 
+# There may be a better way to do this but does each tau get calculated for
+# each individual in each month
+
+tau.list <- list()
+for (mm in 1:num.months)
+	{
+  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)
+	}
+
+	
 # Initialise the means for each of the three groups
+# -------------------------------------------------
 
-mean.2.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
+# Function paramters are month, k0, theta 1, theta 2, Linf, mean yr 1, 
+# mean yr 2, years old, start month or first month included
+
+mean.2.yr <- c()
+mean.1.yr <- c()
+mean.0.yr <- c()
+
+for (mm in months.lst)
+  {
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	
+  }
+
 	
 	
-	
-	
-	
+	> MU2A_AUX
+ [1] 178.3464 180.3816 182.0983 183.5115 184.6750 185.6661 186.5674 178.3464 180.3816 182.0983 183.5115
+> MUA_AUX
+ [1] 141.1393 146.6717 151.3381 155.1795 158.3424 161.0365 163.4865 141.1393 146.6717 151.3381 155.1795
+> MUJ_AUX
+ [1]  40.00000  55.03863  67.72336  78.16521  86.76302  94.08611 100.74605  40.00000  55.03863  67.72336
+[11]  78.16521
 	
 	
 	

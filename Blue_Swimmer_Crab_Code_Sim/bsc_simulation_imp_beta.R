@@ -213,14 +213,14 @@ PI1 <- P3
 PI2 <- P2
 K0 <- 1
 LINF <- 185
-M01<-10
+M01<-40
 T0 <- 2
 T1 <- 2
 MMLIST <- seq(0,11)
 
 #Initialise the starting values for the variance quadratic update
 
-VV <- c(20,0.04,3.8,900)										
+VV <- c(5,1/100,3,1)										
 
 ## FUNCTIONS
 ## FUNCTIONS

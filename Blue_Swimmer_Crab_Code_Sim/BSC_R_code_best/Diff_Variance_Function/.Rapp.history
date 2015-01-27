@@ -1,426 +1,3 @@
-################################################################################
-################################################################################
-################################################################################
-###                                                                         ####
-###     SCRIPT TO IMPLEMENT ALGORITHM FOR SOLVING FOR GROWTH PARAMETERS     ####
-###	    VIA THE METHOD OUTLINED IN LLOYD-JONES ET AL. USES AN MM ALGORI     ####
-###     THM AND THE OPTIM FUNCTION TO OPTIMISE OVER LENGTH FREQUENCY DA     ####
-###     TA SETS.                                                            ####
-###                                                                         ###	#
-################################################################################
-################################################################################
-################################################################################
-# Remove any objects to clear the slate#
-#
-rm(list = ls( ))#
-# Data preliminaries#
-# ------------------#
-# Set the working directories#
-#
-setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")#
-setwd("BSC_R_code_best/Diff_Variance_Function/")#
-# Read in the data set on the asymptotic males that was gathered through pots#
-#
-lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)#
-# Pull out the lengths and the dates from these data files#
-#
-lfd.big.males.females.dates   <- as.Date(lfd.big.males.females$Date, "%d/%m/%y")#
-lfd.big.males.females.lengths <- lfd.big.males.females$Carapacewidth#
-# Pull out the year and month information from these dates#
-#
-lfd.big.males.females.dates.year   <- format(lfd.big.males.females.dates, '%Y')#
-lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')#
-# Read in the trawl data on males that contains juvenile recruitment and adults#
-#
-lfd.trawl.males.females <- read.table("LFD")#
-# Pull out the lengths and the dates from these data files#
-#
-lfd.trawl.males.females.dates   <- as.Date(lfd.trawl.males.females $Date, #
-									"%d/%m/%Y")#
-lfd.trawl.males.females.lengths <- lfd.trawl.males.females$Carapace.width#
-# Concatenate the necessary elements from each file into a common #
-# dates and lengths array#
-#
-lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)#
-lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)#
-# Pull out the year and month information from these dates#
-lfd.year   <- format(lfd.dates, '%Y')#
-lfd.months <- format(lfd.dates, '%m')#
-# Pull out the years and months that we are interested in #
-# i.e., those that don't contain recruitment#
-#
-str.month.yr.1 <- 2#
-end.month.yr.1 <- 2#
-#
-str.month.yr.2 <- 8#
-end.month.yr.2 <- 5#
-#
-lfd.85.feb.aug <- which((lfd.year == '1985') & #
-				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
-lfd.86.feb.may <- which((lfd.year == '1986') &#
-				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))#
-# Initialise the data for the model #
-# ---------------------------------#
-#
-num.months      <- 11													#
-lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
-months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Set January to be 0 th month#
-months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
-months 			<- c(months.85, months.86)#
-months.lst      <- as.numeric(names(table(months)))	#
-# Initialise the parameters of the model #
-# --------------------------------------#
-num.inds <- length(months)					# Number of individuals we have#
-pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
-pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
-k0       <- 1		 						# K0 average K#
-linf     <- 200								# Asym length#
-mu.yr.1  <- 40								# First month's average length yr 1#
-mu.yr.2  <- 40								# First month's average length yr 2#
-theta.1  <- 0.2								# Seasonality parameter 1#
-theta.2  <- 0.1								# Seasonality parameter 2#
-var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
-SeasFunc <- function(k0, theta.1, theta.2, time.var) {#
-  # Calculates the canonical seasonal function for the VB model#
-  ##
-  # Args:#
-  #  k0:       Mean  k paramter for VB model#
-  #  theta.1:  Seasonality parameter 1#
-  #  theta.2:  Seasonality parameter 1#
-  #  time.var  time variable#
-  ##
-  # Returns:#
-  #  The resultant value of the seasonal function#
-  return(k0 + theta.1 * cos(2 * pi * time.var) + theta.2 * sin(2 * pi * time.var))#
-}
-SeasRootCalc <- function(k0, theta.1, theta.2, yrs.old) {#
-  # Computes the roots of the seasonal function used #
-  # in VB growth models. This allows for easy integration#
-  # of the #
-  ##
-  # Args:#
-  #  k0:       Mean  k paramter for VB model#
-  #  theta.1:  Seasonality parameter 1#
-  #  theta.2:  Seasonality parameter 1#
-  #  yrs.old:  How old the individuals in this group are#
-  ##
-  # Returns:#
-  #  The two roots between 0 and 1 #
-  # Define a set of aux variables#
-  a = theta.1^2 + theta.2^2#
-  b = 2 * k0 * theta.1#
-  c = -theta.2^2 + k0^2#
-  # Find the set of aux variables solutions#
-  u1 = (-b + sqrt(b^2 -4 * a * c)) / (2 * a)#
-  u2 = (-b - sqrt(b^2 -4 * a * c)) / (2 * a)#
-  # Map them back via arc cos#
-  r11 = 1 - acos(u1) / (2 * pi) + yrsold#
-  r12 =     acos(u1) / (2 * pi) + yrsold#
-  r21 = 1 - acos(u2) / (2 * pi) + yrsold#
-  r22 =     acos(u2) / (2 * pi) + yrsold#
-  # Find those that satisfy the roots of our function#
-  roots  = c(r11, r12, r21, r22)#
-  g.root = SeasFunc(k0, theta.1, theta.2, roots)#
-  g.min  = round(groot)#
-  r1     = min(roots[which(gmin==0)])#
-  r2     = max(roots[which(gmin==0)])#
-  # Return the roots#
-  return(c(r1,r2))#
-  }
-SeasRootCalc(1,2,2,1)
-SeasRootCalc <- function(k0, theta.1, theta.2, yrs.old) {#
-  # Computes the roots of the seasonal function used #
-  # in VB growth models. This allows for easy integration#
-  # of the #
-  ##
-  # Args:#
-  #  k0:       Mean  k paramter for VB model#
-  #  theta.1:  Seasonality parameter 1#
-  #  theta.2:  Seasonality parameter 1#
-  #  yrs.old:  How old the individuals in this group are#
-  ##
-  # Returns:#
-  #  The two roots between 0 and 1 #
-  # Define a set of aux variables#
-  a = theta.1^2 + theta.2^2#
-  b = 2 * k0 * theta.1#
-  c = -theta.2^2 + k0^2#
-  # Find the set of aux variables solutions#
-  u1 = (-b + sqrt(b^2 -4 * a * c)) / (2 * a)#
-  u2 = (-b - sqrt(b^2 -4 * a * c)) / (2 * a)#
-  # Map them back via arc cos#
-  r11 = 1 - acos(u1) / (2 * pi) + yrs.old#
-  r12 =     acos(u1) / (2 * pi) + yrs.old#
-  r21 = 1 - acos(u2) / (2 * pi) + yrs.old#
-  r22 =     acos(u2) / (2 * pi) + yrs.old#
-  # Find those that satisfy the roots of our function#
-  roots  = c(r11, r12, r21, r22)#
-  g.root = SeasFunc(k0, theta.1, theta.2, roots)#
-  g.min  = round(groot)#
-  r1     = min(roots[which(gmin==0)])#
-  r2     = max(roots[which(gmin==0)])#
-  # Return the roots#
-  return(c(r1,r2))#
-  }
-SeasRootCalc(1,2,2,1)
-SeasRootCalc <- function(k0, theta.1, theta.2, yrs.old) {#
-  # Computes the roots of the seasonal function used #
-  # in VB growth models. This allows for easy integration#
-  # of the #
-  ##
-  # Args:#
-  #  k0:       Mean  k paramter for VB model#
-  #  theta.1:  Seasonality parameter 1#
-  #  theta.2:  Seasonality parameter 1#
-  #  yrs.old:  How old the individuals in this group are#
-  ##
-  # Returns:#
-  #  The two roots between 0 and 1 #
-  # Define a set of aux variables#
-  a = theta.1^2 + theta.2^2#
-  b = 2 * k0 * theta.1#
-  c = -theta.2^2 + k0^2#
-  # Find the set of aux variables solutions#
-  u1 = (-b + sqrt(b^2 -4 * a * c)) / (2 * a)#
-  u2 = (-b - sqrt(b^2 -4 * a * c)) / (2 * a)#
-  # Map them back via arc cos#
-  r11 = 1 - acos(u1) / (2 * pi) + yrs.old#
-  r12 =     acos(u1) / (2 * pi) + yrs.old#
-  r21 = 1 - acos(u2) / (2 * pi) + yrs.old#
-  r22 =     acos(u2) / (2 * pi) + yrs.old#
-  # Find those that satisfy the roots of our function#
-  roots  = c(r11, r12, r21, r22)#
-  g.root = SeasFunc(k0, theta.1, theta.2, roots)#
-  g.min  = round(g.root)#
-  r1     = min(roots[which(g.min == 0)])#
-  r2     = max(roots[which(g.min == 0)])#
-  # Return the roots#
-  return(c(r1, r2))#
-  }
-SeasRootCalc(1,2,2,1)
-SeasRootCalc(1,2,2,1)[1]
-r1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]
-r2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]
-k0
-.
-theta.1
-theta.2
-yrs.old
-yrs.old <- 1
-r1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]
-r2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]
-r1
-theta.1<-2
-theta.1<-2
-theta.2<-2
-r1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]
-r2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]
-r1
-r2
-SeasIntegFunc <- function(k0, theta.1, theta.2, str.time, end.time) {#
-  # Calculates the canonical seasonal function for the VB model#
-  ##
-  # Args:#
-  #  k0:       Mean  k paramter for VB model#
-  #  theta.1:  Seasonality parameter 1#
-  #  theta.2:  Seasonality parameter 1#
-  #  str.time  start time for integral#
-  #  end.time  end time for integral#
-  ##
-  # Returns:#
-  #  The resultant value of the seasonal function#
-  integral <- k0 * (end.time - str.time) #
-              + (theta.1 / (2 * pi)) * (sin(2 * pi * end.time) - sin(2 * pi * str.time)) #
-              - (theta.2 / (2 * pi)) * (cos(2 * pi * end.time) - cos(2 * pi * str.time))#
-  return(integral)#
-}
-mm.val  <- (mm %% 12) / 12 + 1 / 24 + yrs.old#
-  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
-  end.mid <- str.mid + 1
-mm=1
-(mm %% 12)
-mm.val  <- (mm %% 12) / 12 + 1 / 24 + yrs.old#
-  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
-  end.mid <- str.mid + 1
-str.mnth = 0
-mm.val  <- (mm %% 12) / 12 + 1 / 24 + yrs.old#
-  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
-  end.mid <- str.mid + 1
-time      <- seq(0, 1, 0.01)#
-  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
-  is.neg.1  <- min(seas.func)#
-  is.neg.2  <- max(seas.func)
-root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
-    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]
-int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
-	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)
-int.yrs.prvs
-yrs.old
-int.root.1
-int.root.2
-theta.2
-theta.1
-k0
-k0 * (end.time - str.time)
-yrs.old
-int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)
-int.yrs.prvs
-zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
-	zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
-	KKyr<-yrsold*(zEnd1+zMid1)
-yrsold<-yrs.old
-K0=1
-T0=2
-T1=2
-zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
-	zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
-	KKyr<-yrsold*(zEnd1+zMid1)
-strmid<-str.mid
-endmid<-end.mid
-zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
-	zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
-	KKyr<-yrsold*(zEnd1+zMid1)
-KKyr
-root.2
-end.mid
-str.mid
-root.1
-r1
-strmid
-K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))
-SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)
-SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)
-end.time= str.mid
-str.time = str.mid
-end.time = root.1
-k0 * (end.time - str.time)
-+ (theta.1 / (2 * pi)) * (sin(2 * pi * end.time) - sin(2 * pi * str.time))
-- (theta.2 / (2 * pi)) * (cos(2 * pi * end.time) - cos(2 * pi * str.time))
-# ---------------------------------------------------------------------#
-#
-SeasIntegFunc <- function(k0, theta.1, theta.2, str.time, end.time) {#
-  # Calculates the canonical seasonal function for the VB model#
-  ##
-  # Args:#
-  #  k0:       Mean  k paramter for VB model#
-  #  theta.1:  Seasonality parameter 1#
-  #  theta.2:  Seasonality parameter 1#
-  #  str.time  start time for integral#
-  #  end.time  end time for integral#
-  ##
-  # Returns:#
-  #  The resultant value of the seasonal function#
-  integral <- k0 * (end.time - str.time) + #
-              (theta.1 / (2 * pi)) * (sin(2 * pi * end.time) - sin(2 * pi * str.time)) - #
-              (theta.2 / (2 * pi)) * (cos(2 * pi * end.time) - cos(2 * pi * str.time))#
-  return(integral)#
-}
-int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
-	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)
-int.yrs.prvs
-zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
-	zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
-	KKyr<-yrsold*(zEnd1+zMid1)
-KKyr
-11 %% 12
-mu.yr.1 =50
-mu.yr.2 =60
-linf = 190
-mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
-  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
-  end.mid <- str.mid + 1#
-  # Assess whether the parameters at this update cross the y=0 axis#
-  # This will allow us to assess whether we need to calculate roots #
-  # for the seasonal function or not#
-  time      <- seq(0, 1, 0.01)#
-  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
-  is.neg.1  <- min(seas.func)#
-  is.neg.2  <- max(seas.func)#
-  if (is.neg.1 < 0 & is.neg.2 > 0) {#
-	# Calculate the roots of the seasonal function #
-    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
-    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
-	# Given the roots calculate the integral over the previous years#
-	# This is equal to the integral up to the first root + the in#
-	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
-	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
-    # Integral for those months less than root 1#
-    if (mm.val <= root.1) {#
-      integral = int.yrs.prvs #
-                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
-    }#
-    # Integral for those months greater than root 1 but less than root 2#
-#
-    if (mm.val > root.1 & mm.val < root.2) {#
-    	integral = int.yrs.prvs #
-                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-    }#
-    # Integral for those months less than root 1#
-    if (mm.val >= root.2) {#
-       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
-	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
-	  }#
-    } else {#
-    # If the integral doesn't have a negative component#
-    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
-    }#
-  if (month > 11) {#
-    mu.yr.2 + (linf - mu.yr.2)*(1-exp(-integral))#
-  } else {#
- 	# For the months in the first year #
-    mu.yr.1 + (linf - mu.yr.1)*(1-exp(-integral))#
-  }
-month = 3
-mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
-  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
-  end.mid <- str.mid + 1#
-  # Assess whether the parameters at this update cross the y=0 axis#
-  # This will allow us to assess whether we need to calculate roots #
-  # for the seasonal function or not#
-  time      <- seq(0, 1, 0.01)#
-  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
-  is.neg.1  <- min(seas.func)#
-  is.neg.2  <- max(seas.func)#
-  if (is.neg.1 < 0 & is.neg.2 > 0) {#
-	# Calculate the roots of the seasonal function #
-    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
-    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
-	# Given the roots calculate the integral over the previous years#
-	# This is equal to the integral up to the first root + the in#
-	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
-	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
-    # Integral for those months less than root 1#
-    if (mm.val <= root.1) {#
-      integral = int.yrs.prvs #
-                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
-    }#
-    # Integral for those months greater than root 1 but less than root 2#
-#
-    if (mm.val > root.1 & mm.val < root.2) {#
-    	integral = int.yrs.prvs #
-                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-    }#
-    # Integral for those months less than root 1#
-    if (mm.val >= root.2) {#
-       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
-       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
-	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
-	  }#
-    } else {#
-    # If the integral doesn't have a negative component#
-    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
-    }#
-  if (month > 11) {#
-    mu.yr.2 + (linf - mu.yr.2)*(1-exp(-integral))#
-  } else {#
- 	# For the months in the first year #
-    mu.yr.1 + (linf - mu.yr.1)*(1-exp(-integral))#
-  }
 # Mean function for calcuating the mean length for the current month#
 # ------------------------------------------------------------------#
 MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
@@ -485,11 +62,2524 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
     integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
     }#
   if (month > 11) {#
-    mu.yr.2 + (linf - mu.yr.2)*(1-exp(-integral))#
+    mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral))#
   } else {#
  	# For the months in the first year #
-    mu.yr.1 + (linf - mu.yr.1)*(1-exp(-integral))#
+    mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral))#
   }#
 }
-MeanLength(3, 1, 2, 2, 190, 50, 60, 0, 0)
-MeanLength(12, 1, 2, 2, 190, 50, 60, 0, 0)
+# Function to calculate roots of the integral of the VB seasonal curve#
+# ---------------------------------------------------------------------#
+#
+SeasIntegFunc <- function(k0, theta.1, theta.2, str.time, end.time) {#
+  # Calculates the canonical seasonal function for the VB model#
+  ##
+  # Args:#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  str.time  start time for integral#
+  #  end.time  end time for integral#
+  ##
+  # Returns:#
+  #  The resultant value of the seasonal function#
+  integral <- k0 * (end.time - str.time) + #
+              (theta.1 / (2 * pi)) * (sin(2 * pi * end.time) - sin(2 * pi * str.time)) - #
+              (theta.2 / (2 * pi)) * (cos(2 * pi * end.time) - cos(2 * pi * str.time))#
+  return(integral)#
+}
+# Function to calculate roots of the seasonal function for the VB model#
+# ---------------------------------------------------------------------#
+#
+SeasFunc <- function(k0, theta.1, theta.2, time.var) {#
+  # Calculates the canonical seasonal function for the VB model#
+  ##
+  # Args:#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  time.var  time variable#
+  ##
+  # Returns:#
+  #  The resultant value of the seasonal function#
+  return(k0 + theta.1 * cos(2 * pi * time.var) + theta.2 * sin(2 * pi * time.var))#
+}#
+SeasRootCalc <- function(k0, theta.1, theta.2, yrs.old) {#
+  # Computes the roots of the seasonal function used #
+  # in VB growth models. This allows for easy integration#
+  # of the #
+  ##
+  # Args:#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  yrs.old:  How old the individuals in this group are#
+  ##
+  # Returns:#
+  #  The two roots between 0 and 1 #
+  # Define a set of aux variables#
+  a = theta.1^2 + theta.2^2#
+  b = 2 * k0 * theta.1#
+  c = -theta.2^2 + k0^2#
+  # Find the set of aux variables solutions#
+  u1 = (-b + sqrt(b^2 -4 * a * c)) / (2 * a)#
+  u2 = (-b - sqrt(b^2 -4 * a * c)) / (2 * a)#
+  # Map them back via arc cos#
+  r11 = 1 - acos(u1) / (2 * pi) + yrs.old#
+  r12 =     acos(u1) / (2 * pi) + yrs.old#
+  r21 = 1 - acos(u2) / (2 * pi) + yrs.old#
+  r22 =     acos(u2) / (2 * pi) + yrs.old#
+  # Find those that satisfy the roots of our function#
+  roots  = c(r11, r12, r21, r22)#
+  g.root = SeasFunc(k0, theta.1, theta.2, roots)#
+  g.min  = round(g.root)#
+  r1     = min(roots[which(g.min == 0)])#
+  r2     = max(roots[which(g.min == 0)])#
+  # Return the roots#
+  return(c(r1, r2))#
+  }
+# Remove any objects to clear the slate#
+#
+rm(list = ls( ))#
+# Data preliminaries#
+# ------------------#
+# Set the working directories#
+#
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")#
+setwd("BSC_R_code_best/Diff_Variance_Function/")#
+# Read in the data set on the asymptotic males that was gathered through pots#
+#
+lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.big.males.females.dates   <- as.Date(lfd.big.males.females$Date, "%d/%m/%y")#
+lfd.big.males.females.lengths <- lfd.big.males.females$Carapacewidth#
+# Pull out the year and month information from these dates#
+#
+lfd.big.males.females.dates.year   <- format(lfd.big.males.females.dates, '%Y')#
+lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')#
+# Read in the trawl data on males that contains juvenile recruitment and adults#
+#
+lfd.trawl.males.females <- read.table("LFD")#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.trawl.males.females.dates   <- as.Date(lfd.trawl.males.females $Date, #
+									"%d/%m/%Y")#
+lfd.trawl.males.females.lengths <- lfd.trawl.males.females$Carapace.width#
+# Concatenate the necessary elements from each file into a common #
+# dates and lengths array#
+#
+lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)#
+lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)#
+# Pull out the year and month information from these dates#
+lfd.year   <- format(lfd.dates, '%Y')#
+lfd.months <- format(lfd.dates, '%m')#
+# Pull out the years and months that we are interested in #
+# i.e., those that don't contain recruitment#
+#
+str.month.yr.1 <- 2#
+end.month.yr.1 <- 2#
+#
+str.month.yr.2 <- 8#
+end.month.yr.2 <- 5#
+#
+lfd.85.feb.aug <- which((lfd.year == '1985') & #
+				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
+lfd.86.feb.may <- which((lfd.year == '1986') &#
+				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))#
+# Initialise the data for the model #
+# ---------------------------------#
+#
+num.months      <- 11													#
+lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
+months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month#
+months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
+months 			<- c(months.85, months.86)#
+months.lst      <- as.numeric(names(table(months)))	#
+# Initialise the parameters of the model #
+# --------------------------------------#
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 0.2								# Seasonality parameter 1#
+theta.2  <- 0.1								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+months.lst
+months
+table(months)
+months.85
+months.86
+lfd.months
+lfd.85.feb.aug
+as.numeric(lfd.months[lfd.85.feb.aug])
+lfd.months[lfd.85.feb.aug]
+lfd.months
+lfd.85.feb.aug
+lfd.months[lfd.85.feb.aug]
+lfd.86.feb.may
+lfd.months[lfd.86.feb.may]
+as.numeric(lfd.months)
+lfd.lengths.sub
+lfd.months[lfd.85.feb.aug]
+lfd.months
+as.numeric(lfd.months)
+str.month.yr.1 <- 2#
+end.month.yr.1 <- 8#
+#
+str.month.yr.2 <- 2#
+end.month.yr.2 <- 5#
+#
+lfd.85.feb.aug <- which((lfd.year == '1985') & #
+				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
+lfd.86.feb.may <- which((lfd.year == '1986') &#
+				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))
+num.months      <- 11													#
+lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
+months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month#
+months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
+months 			<- c(months.85, months.86)#
+months.lst      <- as.numeric(names(table(months)))
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 0.2								# Seasonality parameter 1#
+theta.2  <- 0.1								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+months.lst
+str.month.yr
+str.month.yr.1
+lfd.months
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 2								# Seasonality parameter 1#
+theta.2  <- 2								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+mean_2.yr <- MeanLength(months.lst, k0, theta.1, theta.2, linf, mu.yr.1,
+mu.yr.2, 2, 1)
+# Mean function for calcuating the mean length for the current month#
+# ------------------------------------------------------------------#
+MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
+			  yrs.old, str.mnth) {#
+  # Computes the mean length of the distribution for the current month#
+  # based on an integration over the seasonal curve from a von Bertal#
+  # anffy growth model.#
+  ##
+  # Args:#
+  #  month:    Current month to calulate mean at. Numbered from Jan=0#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  linf:     Asymptotic length#
+  #  mu.yr.1:  First month's average length yr 1#
+  #  mu.yr.2:  First month's average length yr 2#
+  #  yrs.old:  How old the individuals in this group are#
+  #  str.mnth: The month that we start calculating means for #
+  ##
+  # Returns:#
+  #  Mean length for the month in the current iteration#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- str.mid + 1#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  if (month > 11) {#
+    mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral))#
+  } else {#
+ 	# For the months in the first year #
+    mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral))#
+  }#
+}
+mean_2.yr <- MeanLength(months.lst, k0, theta.1, theta.2, linf, mu.yr.1,
+mu.yr.2, 2, 1)
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func")#
+source("bsc_variance_func")
+getwd()
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")#
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")
+mean_2.yr <- MeanLength(months.lst, k0, theta.1, theta.2, linf, mu.yr.1,
+mu.yr.2, 2, 1)
+mean_2.yr
+months.lst
+mean_2.yr <- MeanLength(1, k0, theta.1, theta.2, linf, mu.yr.1,#
+             mu.yr.2, 2, 1)
+mean_2.yr
+mean_2.yr <- MeanLength(2, k0, theta.1, theta.2, linf, mu.yr.1,#
+             mu.yr.2, 2, 1)
+mean_2.yr
+mean_2.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1,#
+             mu.yr.2, 2, 1)
+mean_2.yr
+mu.yr.1
+linf
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")#
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")
+rm(list = ls( ))
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")#
+setwd("BSC_R_code_best/Diff_Variance_Function/")
+lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)
+lfd.big.males.females.dates   <- as.Date(lfd.big.males.females$Date, "%d/%m/%y")#
+lfd.big.males.females.lengths <- lfd.big.males.females$Carapacewidth
+lfd.big.males.females.dates.year   <- format(lfd.big.males.females.dates, '%Y')#
+lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')
+lfd.trawl.males.females <- read.table("LFD")
+lfd.trawl.males.females.dates   <- as.Date(lfd.trawl.males.females $Date, #
+									"%d/%m/%Y")#
+lfd.trawl.males.females.lengths <- lfd.trawl.males.females$Carapace.width
+lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)#
+lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
+lfd.year   <- format(lfd.dates, '%Y')#
+lfd.months <- format(lfd.dates, '%m')
+str.month.yr.1 <- 2#
+end.month.yr.1 <- 8#
+#
+str.month.yr.2 <- 2#
+end.month.yr.2 <- 5#
+#
+lfd.85.feb.aug <- which((lfd.year == '1985') & #
+				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
+lfd.86.feb.may <- which((lfd.year == '1986') &#
+				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))
+num.months      <- 11													#
+lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
+months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month#
+months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
+months 			<- c(months.85, months.86)#
+months.lst      <- as.numeric(names(table(months)))
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 2								# Seasonality parameter 1#
+theta.2  <- 2								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+1:num.months
+tau.list <- list()#
+for (mm in 1:num.months)#
+	{#
+  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)#
+	}
+str(tau.list)
+tau.list <- list()#
+for (mm in 1:num.months)#
+	{#
+  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)#
+	}
+var.pars
+mean.2.yr <- MeanLength(1, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")#
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")#
+setwd("BSC_R_code_best/Diff_Variance_Function/")
+# Read in the data set on the asymptotic males that was gathered through pots#
+#
+lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.big.males.females.dates   <- as.Date(lfd.big.males.females$Date, "%d/%m/%y")#
+lfd.big.males.females.lengths <- lfd.big.males.females$Carapacewidth#
+# Pull out the year and month information from these dates#
+#
+lfd.big.males.females.dates.year   <- format(lfd.big.males.females.dates, '%Y')#
+lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')#
+# Read in the trawl data on males that contains juvenile recruitment and adults#
+#
+lfd.trawl.males.females <- read.table("LFD")#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.trawl.males.females.dates   <- as.Date(lfd.trawl.males.females $Date, #
+									"%d/%m/%Y")#
+lfd.trawl.males.females.lengths <- lfd.trawl.males.females$Carapace.width#
+# Concatenate the necessary elements from each file into a common #
+# dates and lengths array#
+#
+lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)#
+lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)#
+# Pull out the year and month information from these dates#
+lfd.year   <- format(lfd.dates, '%Y')#
+lfd.months <- format(lfd.dates, '%m')#
+# Pull out the years and months that we are interested in #
+# i.e., those that don't contain recruitment#
+#
+str.month.yr.1 <- 2#
+end.month.yr.1 <- 8#
+#
+str.month.yr.2 <- 2#
+end.month.yr.2 <- 5#
+#
+lfd.85.feb.aug <- which((lfd.year == '1985') & #
+				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
+lfd.86.feb.may <- which((lfd.year == '1986') &#
+				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))#
+# Initialise the data for the model #
+# ---------------------------------#
+#
+num.months      <- 11													#
+lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
+months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month#
+months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
+months 			<- c(months.85, months.86)#
+months.lst      <- as.numeric(names(table(months)))	#
+# Initialise the parameters of the model #
+# --------------------------------------#
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 2								# Seasonality parameter 1#
+theta.2  <- 2								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+tau.list <- list()#
+for (mm in 1:num.months)#
+	{#
+  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)#
+	}
+mean.2.yr <- MeanLength(1, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
+mean.2.yr
+mean.2.yr <- MeanLength(2, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
+mean.2.yr
+mean.2.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
+mean.2.yr
+mean.2.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+mean.1.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+mean.0.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)
+mean.2.yr
+mean.1.yr
+mean.0.yr
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.2.yr
+mean.1.yr
+mean.0.yr
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.0.yr
+mean.1.yr
+mean.2.yr
+MU2A <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  #mm=12#
+  mmval <- MMLIST[mm]%%12#
+  yrsold<-2#
+  strmnth<-0#
+  strmid<-strmnth/12+1/24+yrsold#
+  endmid<-strmid+1#
+  mm2=(mmval/12)+1/24+yrsold#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  #plot(t,g)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+	b=2*K0*T0#
+	c=-(T1^2)+K0^2#
+	u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+	u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+	r11=1-acos(u1)/(2*pi)+yrsold#
+	r12=acos(u1)/(2*pi)+yrsold#
+	r21=1-acos(u2)/(2*pi)+yrsold#
+	r22=acos(u2)/(2*pi)+yrsold#
+	roots<-c(r11, r12, r21, r22)#
+	groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+	gmin<-round(groot)#
+	r1<-min(roots[which(gmin==0)])#
+	r2<-max(roots[which(gmin==0)])#
+    #Regime#
+	zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+    KKyr<-yrsold*(zEnd1+zMid1)#
+    #Those less than r1#
+    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-						cos(2*pi*strmid))}#
+    #Those between r1 and r2#
+    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-								cos(2*pi*strmid))}#
+    #Those after r2#
+    if (mm2>r2)#
+    {#
+    zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+    zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+    KK<-zEnd+zMid+KKyr#
+    }#
+  } else #
+  {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + 				                           	yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+  M01 + (LINF-M01)*(1-exp(-KK))#
+}#
+#1 YEAR OLD ADULT's MEAN FUNCTION#
+MUA <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+  mmval <- MMLIST[mm]%%12#
+  yrsold<-1#
+  strmnth<-0#
+  strmid<-strmnth/12+1/24+yrsold#
+  endmid<-strmid+1#
+  mm2=(mmval/12)+1/24+yrsold#
+  t<-seq(0,1,0.01)#
+  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+  Isneg<-min(g)#
+  Isneg2<-max(g)#
+  if (Isneg<0&Isneg2>0)#
+  {#
+    a=T0^2+T1^2#
+	b=2*K0*T0#
+	c=-(T1^2)+K0^2#
+	u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+	u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+	r11=1-acos(u1)/(2*pi)+yrsold#
+	r12=acos(u1)/(2*pi)+yrsold#
+	r21=1-acos(u2)/(2*pi)+yrsold#
+	r22=acos(u2)/(2*pi)+yrsold#
+	roots<-c(r11, r12, r21, r22)#
+	groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+	gmin<-round(groot)#
+	r1<-min(roots[which(gmin==0)])#
+	r2<-max(roots[which(gmin==0)])#
+    #Regime#
+	zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+    KKyr<-yrsold*(zEnd1+zMid1)#
+    	#Those less than r1#
+    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2) -						cos(2*pi*strmid))}#
+    	#Those between r1 and r2#
+    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1) -								cos(2*pi*strmid))}#
+    	#Those after r2#
+    	if (mm2>r2) {#
+    		zMid <- K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+    		zEnd <- K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+    		KK   <- zEnd+zMid+KKyr#
+    		} }else {#
+    		KK  <- K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + 					yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid) -						cos(2*pi*strmid)) )}#
+  (M01 + (LINF-M01)*(1-exp(-KK)))#
+}#
+#THE JUVENUILES MEAN FUNCTION#
+#
+MUJ <- function(mm,K0,T0,T1,LINF,M01)#
+{#
+	#mm=2#
+	mmval <- MMLIST[mm]%%12#
+  	yrsold<-0#
+  	strmnth<-0#
+  	strmid<-strmnth/12+1/24+yrsold#
+  	endmid<-strmid+1#
+  	mm2=(mmval/12)+1/24+yrsold#
+  	t<-seq(0,1,0.01)#
+	g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	Isneg<-min(g)#
+	Isneg2<-max(g)#
+ 	if (Isneg<0&Isneg2>0)#
+  		{#
+    	a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)#
+		r12=acos(u1)/(2*pi)#
+		r21=1-acos(u2)/(2*pi)#
+		r22=acos(u2)/(2*pi)#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+    	#Regime#
+#
+    	#Those less than r1#
+    		if (mm2<r1) {KK = K0*(mm2-strmid) + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2) -								 cos(2*pi*strmid))}#
+    		#Those between r1 and r2#
+    		if (mm2>r1&mm2<r2) {KK=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1) -										cos(2*pi*strmid))}#
+    		#Those after r2#
+    		if (mm2>r2)#
+    			{#
+    			zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)  -								cos(2*pi*strmid))#
+    			zEnd=K0*(mm2-r2)    + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))    - (T1/(2*pi))*(cos(2*pi*mm2) - 								cos(2*pi*r2))#
+    			KK<-zEnd+zMid#
+    			}} else {#
+    	KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	#
+ M01 + (LINF-M01)*(1-exp(-KK))#
+}
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 0.5								# Seasonality parameter 1#
+theta.2  <- 0.5								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+# Function paramters are month, k0, theta 1, theta 2, Linf, mean yr 1, #
+# mean yr 2, years old, start month or first month included#
+#
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.2.yr
+mean.1.yr
+mean.0.yr
+mean.2.yr
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 1.0	     						# Seasonality parameter 1#
+theta.2  <- 1.0								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+setwd("~/Dropbox/AAUni/APhD/Blueswimmer/BSC_R_code_best/diff_variance_function/")#
+	#Remove any old objects#
+	rm(list = ls())#
+	#DATA PRELIMINARIES#
+	#Read in the data set on the asymptotic males that was gathered through pots#
+	LFD_bigMalesFemales<-read.table("LFD_bigMalesFem",header=T)#
+	#Pull out the lengths and the dates from these data files#
+	Dates1<-as.Date(LFD_bigMalesFemales$Date,"%d/%m/%y")               #
+	Lengths1<-LFD_bigMalesFemales$Carapacewidth#
+	#Read in the trawl data on males that contains juvenile recruitment and adults#
+	LFD<-read.table("LFD")#
+	#which(LFD$Sex==1)#
+	#Pull out the lengths and the dates from these data files#
+	Dates2<-as.Date(LFD$Date,"%d/%m/%Y")#
+	Lengths2<-LFD$Carapace.width#
+	#Concatenate the necessary elements from each file into a common dates and lengths array#
+	Dates <- c(Dates2,Dates1)#
+	Lengths <- c(Lengths2,Lengths1)#
+	#Pull out the year and month information from these dates#
+	YEAR <- format(Dates,'%Y')#
+	MONTHS <- format(Dates,'%m')#
+	#Pull out the years and months that we a re interested in i.e., those that don't contain 	recruitment#
+	WHICH85JO <- which((YEAR == '1985') & (as.numeric(MONTHS) %in% (2:8)))#
+	WHICH86FM <- which((YEAR == '1986') & (as.numeric(MONTHS) %in% (2:5)))#
+	#INITIALISE#
+	MON <- 11													#Assign how many months we would like to model#
+	LL <- Lengths[c(WHICH85JO,WHICH86FM)]						#Assign the number of individuals#
+	MM1985 <- as.numeric(MONTHS[WHICH85JO])-1					#Assign January to be the 0th months#
+	MM1986 <- as.numeric(MONTHS[WHICH86FM])+11					#Thus January of next year will be the 12 month. Plus we do this so that we don't have to estimate yr#
+	MM<-c(MM1985,MM1986)										#Concatenate these months values together#
+	MMLIST <- as.numeric(names(table(MM)))						#Make a list of the months from January first i.e., January 1986 is gets assigned a 12#
+	#Parameter Initialise#
+	NN <- length(MM)											#Initialise the number of individuals we have#
+	PI1 <- rep(1/3,MON)											#Initialise the PIs#
+	PI2 <- rep(1/3,MON)											#Initialise the PIs#
+	K0 <- 1														#Initialise K0 average K#
+	LINF <- 200													#Initialise asym length#
+	M01<-40														#Initialise first month's average length#
+	M02<-40														#Initialise second month's average length#
+	T0 <- 0.2														#Initialise first seasonality parameter#
+	T1 <- 0.1														#Initialise second seasonality parameter#
+	VV <- c(5,1/100,3,1)											   #Initialise the starting values for the variance
+#Setting values for drawing plots #
+	#K0=0.84062808;  LINF=159.65387413; M01=58.86155838; M02=81.29860313; T0=-0.07925965; T1=0.57794716; VV=c( -4.77584147,   6.19436755  ,-0.03489903)#
+	#0.84062808  -0.07925965   0.57794716 159.65387413  58.86155838  81.29860313  -4.77584147   6.19436755  -0.03489903#
+	#FUNCTIONS#
+	#ASYMPTOTIC MEAN FUNCTION#
+	MU2A <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  #mm=1#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-2#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  #plot(t,g)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #Those less than r1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    #Those between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    #Those after r2#
+	    if (mm2>r2)#
+	    {#
+	    zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    KK<-zEnd+zMid+KKyr#
+	    }#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}#
+	#1 YEAR OLD ADULT's MEAN FUNCTION#
+	MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-1#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    	#Those less than r1#
+	    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    	#Those between r1 and r2#
+	    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    	#Those after r2#
+	    	if (mm2>r2)#
+	    		{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    		}#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}#
+	#THE JUVENUILES MEAN FUNCTION#
+	MUJ <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+		#mm=2#
+		mmval <- MMLIST[mm]%%12#
+	  	yrsold<-0#
+	  	strmnth<-min(MM1985)#
+	  	strmid<-strmnth/12+1/24+yrsold#
+	  	endmid<-strmid+1#
+	  	mm2=(mmval/12)+1/24+yrsold#
+	  	t<-seq(0,1,0.01)#
+		g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+		Isneg<-min(g)#
+		Isneg2<-max(g)#
+	 	if (Isneg<0&Isneg2>0)#
+	  		{#
+	    	a=T0^2+T1^2#
+			b=2*K0*T0#
+			c=-(T1^2)+K0^2#
+			u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+			u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+			r11=1-acos(u1)/(2*pi)#
+			r12=acos(u1)/(2*pi)#
+			r21=1-acos(u2)/(2*pi)#
+			r22=acos(u2)/(2*pi)#
+			roots<-c(r11, r12, r21, r22)#
+			groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+			gmin<-round(groot)#
+			r1<-min(roots[which(gmin==0)])#
+			r2<-max(roots[which(gmin==0)])#
+	    	#Regime#
+	    	#Those less than r1#
+	    		if (mm2<r1) {KK = K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    		#Those between r1 and r2#
+	    		if (mm2>r1&mm2<r2) {KK=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    		#Those after r2#
+	    		if (mm2>r2)#
+	    			{#
+	    			zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    			zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    			KK<-zEnd+zMid#
+	    			}#
+	  	} else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	#
+	  if (MMLIST[mm]==min(MM1985))  {M01} else if (MMLIST[mm]==min(MM1986)) {M02} else if (MMLIST[mm]>min(MM1985)&MMLIST[mm]<min(MM1986)) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}#
+	}
+TAU <- list()#
+	for (mm in 1:(MON))#
+		{#
+	  		TAU[[mm]] <- matrix(1/3,NN,3)#
+		}
+MU2A_AUX <- c()#
+	MUA_AUX <- c()#
+	MUJ_AUX <- c()#
+	for (mm in 1:MON)#
+		{#
+	 	MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+	  	MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+	 	MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+		}
+MU2A_AUX
+MUA_AUX
+MUJ_AUX
+################################################################################
+################################################################################
+################################################################################
+###                                                                         ####
+###     SCRIPT TO IMPLEMENT ALGORITHM FOR SOLVING FOR GROWTH PARAMETERS     ####
+###	    VIA THE METHOD OUTLINED IN LLOYD-JONES ET AL. USES AN MM ALGORI     ####
+###     THM AND THE OPTIM FUNCTION TO OPTIMISE OVER LENGTH FREQUENCY DA     ####
+###     TA SETS.                                                            ####
+###                                                                         ###	#
+################################################################################
+################################################################################
+################################################################################
+#
+# Remove any objects to clear the slate#
+#
+rm(list = ls( ))#
+#
+# Source the function files needed#
+# --------------------------------#
+#
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")#
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")#
+# Data preliminaries#
+# ------------------#
+#
+# Set the working directories#
+#
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")#
+setwd("BSC_R_code_best/Diff_Variance_Function/")#
+# Read in the data set on the asymptotic males that was gathered through pots#
+#
+lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.big.males.females.dates   <- as.Date(lfd.big.males.females$Date, "%d/%m/%y")#
+lfd.big.males.females.lengths <- lfd.big.males.females$Carapacewidth#
+# Pull out the year and month information from these dates#
+#
+lfd.big.males.females.dates.year   <- format(lfd.big.males.females.dates, '%Y')#
+lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')#
+# Read in the trawl data on males that contains juvenile recruitment and adults#
+#
+lfd.trawl.males.females <- read.table("LFD")#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.trawl.males.females.dates   <- as.Date(lfd.trawl.males.females $Date, #
+									"%d/%m/%Y")#
+lfd.trawl.males.females.lengths <- lfd.trawl.males.females$Carapace.width#
+# Concatenate the necessary elements from each file into a common #
+# dates and lengths array#
+#
+lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)#
+lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)#
+# Pull out the year and month information from these dates#
+lfd.year   <- format(lfd.dates, '%Y')#
+lfd.months <- format(lfd.dates, '%m')#
+# Pull out the years and months that we are interested in #
+# i.e., those that don't contain recruitment#
+#
+str.month.yr.1 <- 2#
+end.month.yr.1 <- 8#
+#
+str.month.yr.2 <- 2#
+end.month.yr.2 <- 5#
+#
+lfd.85.feb.aug <- which((lfd.year == '1985') & #
+				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
+lfd.86.feb.may <- which((lfd.year == '1986') &#
+				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))#
+# Initialise the data for the model #
+# ---------------------------------#
+#
+num.months      <- 11													#
+lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
+months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month#
+months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
+months 			<- c(months.85, months.86)#
+months.lst      <- as.numeric(names(table(months)))	#
+# Initialise the parameters of the model #
+# --------------------------------------#
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 1.0	     						# Seasonality parameter 1#
+theta.2  <- 1.0								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector#
+# Initialise the taus #
+# -------------------	#
+#
+# There may be a better way to do this but does each tau get calculated for#
+# each individual in each month#
+#
+tau.list <- list()#
+for (mm in 1:num.months)#
+	{#
+  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)#
+	}#
+# Initialise the means for each of the three groups#
+# -------------------------------------------------#
+#
+# Function paramters are month, k0, theta 1, theta 2, Linf, mean yr 1, #
+# mean yr 2, years old, start month or first month included#
+#
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.2.yr
+mean.1.yr
+mean.0.yr
+month    = 1 #
+  k0       = 1#
+  theta.1  = 2 #
+  theta.2  = 2 #
+  linf     = 200#
+  mu.yr.1  = 40#
+  mu.yr.2  = 40#
+  yrs.old  = 1#
+  str.mnth = 1
+mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24
+mm.val
+str.mid
+end.mid
+end.mid <- 1 + 1 / 24 + yrs.old
+end.mid
+time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)
+is.neg.1
+is.neg.2
+root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]
+root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]
+root.1
+root.2
+int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)
+int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)
+int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)
+int.yrs.prvs
+int.root.2
+int.root.1
+mmval <- MMLIST[mm]%%12#
+	  yrsold<-1#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)
+# Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }
+# Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+integral
+(linf - mu.yr.1) * (1-exp(-integral))
+mu.yr.1
+mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral))
+source("bsc_mean_length_func.R")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")#
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.2.yr
+mean.1.yr
+mean.0.yr[
+mean.0.yr
+1:MON
+time      <- seq(0, 1, 0.01)
+SeasFunc(k0, theta.1, theta.2, time)
+#setwd("/Users/uqllloyd/Dropbox/AAUni/APhD/Blueswimmer/CrabStuff2withMMAlg/RcodesData")#
+	setwd("~/Dropbox/AAUni/APhD/Blueswimmer/BSC_R_code_best/diff_variance_function/")#
+	#Remove any old objects#
+	rm(list = ls())#
+	#DATA PRELIMINARIES#
+	#Read in the data set on the asymptotic males that was gathered through pots#
+	LFD_bigMalesFemales<-read.table("LFD_bigMalesFem",header=T)#
+	#Pull out the lengths and the dates from these data files#
+	Dates1<-as.Date(LFD_bigMalesFemales$Date,"%d/%m/%y")               #
+	Lengths1<-LFD_bigMalesFemales$Carapacewidth#
+	#Read in the trawl data on males that contains juvenile recruitment and adults#
+	LFD<-read.table("LFD")#
+	#which(LFD$Sex==1)#
+	#Pull out the lengths and the dates from these data files#
+	Dates2<-as.Date(LFD$Date,"%d/%m/%Y")#
+	Lengths2<-LFD$Carapace.width#
+	#Concatenate the necessary elements from each file into a common dates and lengths array#
+	Dates <- c(Dates2,Dates1)#
+	Lengths <- c(Lengths2,Lengths1)#
+	#Pull out the year and month information from these dates#
+	YEAR <- format(Dates,'%Y')#
+	MONTHS <- format(Dates,'%m')#
+	#Pull out the years and months that we a re interested in i.e., those that don't contain 	recruitment#
+	WHICH85JO <- which((YEAR == '1985') & (as.numeric(MONTHS) %in% (2:8)))#
+	WHICH86FM <- which((YEAR == '1986') & (as.numeric(MONTHS) %in% (2:5)))#
+	#INITIALISE#
+	MON <- 11													#Assign how many months we would like to model#
+	LL <- Lengths[c(WHICH85JO,WHICH86FM)]						#Assign the number of individuals#
+	MM1985 <- as.numeric(MONTHS[WHICH85JO])-1					#Assign January to be the 0th months#
+	MM1986 <- as.numeric(MONTHS[WHICH86FM])+11					#Thus January of next year will be the 12 month. Plus we do this so that we don't have to estimate yr#
+	MM<-c(MM1985,MM1986)										#Concatenate these months values together#
+	MMLIST <- as.numeric(names(table(MM)))						#Make a list of the months from January first i.e., January 1986 is gets assigned a 12#
+	#Parameter Initialise#
+	NN <- length(MM)											#Initialise the number of individuals we have#
+	PI1 <- rep(1/3,MON)											#Initialise the PIs#
+	PI2 <- rep(1/3,MON)											#Initialise the PIs#
+	K0 <- 1														#Initialise K0 average K#
+	LINF <- 200													#Initialise asym length#
+	M01<-40														#Initialise first month's average length#
+	M02<-40														#Initialise second month's average length#
+	T0 <- 0.2														#Initialise first seasonality parameter#
+	T1 <- 0.1														#Initialise second seasonality parameter#
+	VV <- c(5,1/100,3,1)											   #Initialise the starting values for the variance quadratic update#
+	#Setting values for drawing plots #
+	#K0=0.84062808;  LINF=159.65387413; M01=58.86155838; M02=81.29860313; T0=-0.07925965; T1=0.57794716; VV=c( -4.77584147,   6.19436755  ,-0.03489903)#
+	#0.84062808  -0.07925965   0.57794716 159.65387413  58.86155838  81.29860313  -4.77584147   6.19436755  -0.03489903#
+	#FUNCTIONS#
+	#ASYMPTOTIC MEAN FUNCTION#
+	MU2A <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  #mm=1#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-2#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  #plot(t,g)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #Those less than r1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    #Those between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    #Those after r2#
+	    if (mm2>r2)#
+	    {#
+	    zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    KK<-zEnd+zMid+KKyr#
+	    }#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}#
+	#1 YEAR OLD ADULT's MEAN FUNCTION#
+	MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-1#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    	#Those less than r1#
+	    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    	#Those between r1 and r2#
+	    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    	#Those after r2#
+	    	if (mm2>r2)#
+	    		{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    		}#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}#
+	#THE JUVENUILES MEAN FUNCTION#
+	MUJ <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+		#mm=2#
+		mmval <- MMLIST[mm]%%12#
+	  	yrsold<-0#
+	  	strmnth<-min(MM1985)#
+	  	strmid<-strmnth/12+1/24+yrsold#
+	  	endmid<-strmid+1#
+	  	mm2=(mmval/12)+1/24+yrsold#
+	  	t<-seq(0,1,0.01)#
+		g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+		Isneg<-min(g)#
+		Isneg2<-max(g)#
+	 	if (Isneg<0&Isneg2>0)#
+	  		{#
+	    	a=T0^2+T1^2#
+			b=2*K0*T0#
+			c=-(T1^2)+K0^2#
+			u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+			u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+			r11=1-acos(u1)/(2*pi)#
+			r12=acos(u1)/(2*pi)#
+			r21=1-acos(u2)/(2*pi)#
+			r22=acos(u2)/(2*pi)#
+			roots<-c(r11, r12, r21, r22)#
+			groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+			gmin<-round(groot)#
+			r1<-min(roots[which(gmin==0)])#
+			r2<-max(roots[which(gmin==0)])#
+	    	#Regime#
+	    	#Those less than r1#
+	    		if (mm2<r1) {KK = K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    		#Those between r1 and r2#
+	    		if (mm2>r1&mm2<r2) {KK=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    		#Those after r2#
+	    		if (mm2>r2)#
+	    			{#
+	    			zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    			zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    			KK<-zEnd+zMid#
+	    			}#
+	  	} else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	#
+	print(KK)#
+	  if (MMLIST[mm]==min(MM1985))  {M01} else if (MMLIST[mm]==min(MM1986)) {M02} else if (MMLIST[mm]>min(MM1985)&MMLIST[mm]<min(MM1986)) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}#
+	}
+#Set the necessary working directories#
+	#setwd("/Users/uqllloyd/Dropbox/AAUni/APhD/Blueswimmer/CrabStuff2withMMAlg/RcodesData")#
+	setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/BSC_R_code_best/Diff_Variance_Function/BSC_Code_FM_diff_var_func.R/")#
+	#Remove any old objects#
+	rm(list = ls())#
+	#DATA PRELIMINARIES#
+	#Read in the data set on the asymptotic males that was gathered through pots#
+	LFD_bigMalesFemales<-read.table("LFD_bigMalesFem",header=T)#
+	#Pull out the lengths and the dates from these data files#
+	Dates1<-as.Date(LFD_bigMalesFemales$Date,"%d/%m/%y")               #
+	Lengths1<-LFD_bigMalesFemales$Carapacewidth#
+	#Read in the trawl data on males that contains juvenile recruitment and adults#
+	LFD<-read.table("LFD")#
+	#which(LFD$Sex==1)#
+	#Pull out the lengths and the dates from these data files#
+	Dates2<-as.Date(LFD$Date,"%d/%m/%Y")#
+	Lengths2<-LFD$Carapace.width#
+	#Concatenate the necessary elements from each file into a common dates and lengths array#
+	Dates <- c(Dates2,Dates1)#
+	Lengths <- c(Lengths2,Lengths1)#
+	#Pull out the year and month information from these dates#
+	YEAR <- format(Dates,'%Y')#
+	MONTHS <- format(Dates,'%m')#
+	#Pull out the years and months that we a re interested in i.e., those that don't contain 	recruitment#
+	WHICH85JO <- which((YEAR == '1985') & (as.numeric(MONTHS) %in% (2:8)))#
+	WHICH86FM <- which((YEAR == '1986') & (as.numeric(MONTHS) %in% (2:5)))
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/BSC_R_code_best/Diff_Variance_Function")
+#Remove any old objects#
+	rm(list = ls())#
+	#DATA PRELIMINARIES#
+	#Read in the data set on the asymptotic males that was gathered through pots#
+	LFD_bigMalesFemales<-read.table("LFD_bigMalesFem",header=T)#
+	#Pull out the lengths and the dates from these data files#
+	Dates1<-as.Date(LFD_bigMalesFemales$Date,"%d/%m/%y")               #
+	Lengths1<-LFD_bigMalesFemales$Carapacewidth#
+	#Read in the trawl data on males that contains juvenile recruitment and adults#
+	LFD<-read.table("LFD")#
+	#which(LFD$Sex==1)#
+	#Pull out the lengths and the dates from these data files#
+	Dates2<-as.Date(LFD$Date,"%d/%m/%Y")#
+	Lengths2<-LFD$Carapace.width#
+	#Concatenate the necessary elements from each file into a common dates and lengths array#
+	Dates <- c(Dates2,Dates1)#
+	Lengths <- c(Lengths2,Lengths1)#
+	#Pull out the year and month information from these dates#
+	YEAR <- format(Dates,'%Y')#
+	MONTHS <- format(Dates,'%m')#
+	#Pull out the years and months that we a re interested in i.e., those that don't contain 	recruitment#
+	WHICH85JO <- which((YEAR == '1985') & (as.numeric(MONTHS) %in% (2:8)))#
+	WHICH86FM <- which((YEAR == '1986') & (as.numeric(MONTHS) %in% (2:5)))#
+	#INITIALISE#
+	MON <- 11													#Assign how many months we would like to model#
+	LL <- Lengths[c(WHICH85JO,WHICH86FM)]						#Assign the number of individuals#
+	MM1985 <- as.numeric(MONTHS[WHICH85JO])-1					#Assign January to be the 0th months#
+	MM1986 <- as.numeric(MONTHS[WHICH86FM])+11					#Thus January of next year will be the 12 month. Plus we do this so that we don't have to estimate yr#
+	MM<-c(MM1985,MM1986)										#Concatenate these months values together#
+	MMLIST <- as.numeric(names(table(MM)))						#Make a list of the months from January first i.e., January 1986 is gets assigned a 12#
+	#Parameter Initialise#
+	NN <- length(MM)											#Initialise the number of individuals we have#
+	PI1 <- rep(1/3,MON)											#Initialise the PIs#
+	PI2 <- rep(1/3,MON)											#Initialise the PIs#
+	K0 <- 1														#Initialise K0 average K#
+	LINF <- 200													#Initialise asym length#
+	M01<-40														#Initialise first month's average length#
+	M02<-40														#Initialise second month's average length#
+	T0 <- 0.2														#Initialise first seasonality parameter#
+	T1 <- 0.1														#Initialise second seasonality parameter#
+	VV <- c(5,1/100,3,1)											   #Initialise the starting values for the variance quadratic update#
+	#Setting values for drawing plots #
+	#K0=0.84062808;  LINF=159.65387413; M01=58.86155838; M02=81.29860313; T0=-0.07925965; T1=0.57794716; VV=c( -4.77584147,   6.19436755  ,-0.03489903)#
+	#0.84062808  -0.07925965   0.57794716 159.65387413  58.86155838  81.29860313  -4.77584147   6.19436755  -0.03489903#
+	#FUNCTIONS#
+	#ASYMPTOTIC MEAN FUNCTION#
+	MU2A <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  #mm=1#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-2#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  #plot(t,g)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    #Those less than r1#
+	    if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    #Those between r1 and r2#
+	    if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    #Those after r2#
+	    if (mm2>r2)#
+	    {#
+	    zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    KK<-zEnd+zMid+KKyr#
+	    }#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}
+#1 YEAR OLD ADULT's MEAN FUNCTION#
+	MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-1#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    	#Those less than r1#
+	    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    	#Those between r1 and r2#
+	    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    	#Those after r2#
+	    	if (mm2>r2)#
+	    		{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    		}#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}#
+	#THE JUVENUILES MEAN FUNCTION#
+	MUJ <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+		#mm=2#
+		mmval <- MMLIST[mm]%%12#
+	  	yrsold<-0#
+	  	strmnth<-min(MM1985)#
+	  	strmid<-strmnth/12+1/24+yrsold#
+	  	endmid<-strmid+1#
+	  	mm2=(mmval/12)+1/24+yrsold#
+	  	t<-seq(0,1,0.01)#
+		g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+		Isneg<-min(g)#
+		Isneg2<-max(g)#
+	 	if (Isneg<0&Isneg2>0)#
+	  		{#
+	    	a=T0^2+T1^2#
+			b=2*K0*T0#
+			c=-(T1^2)+K0^2#
+			u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+			u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+			r11=1-acos(u1)/(2*pi)#
+			r12=acos(u1)/(2*pi)#
+			r21=1-acos(u2)/(2*pi)#
+			r22=acos(u2)/(2*pi)#
+			roots<-c(r11, r12, r21, r22)#
+			groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+			gmin<-round(groot)#
+			r1<-min(roots[which(gmin==0)])#
+			r2<-max(roots[which(gmin==0)])#
+	    	#Regime#
+	    	#Those less than r1#
+	    		if (mm2<r1) {KK = K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    		#Those between r1 and r2#
+	    		if (mm2>r1&mm2<r2) {KK=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    		#Those after r2#
+	    		if (mm2>r2)#
+	    			{#
+	    			zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    			zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    			KK<-zEnd+zMid#
+	    			}#
+	  	} else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	#
+	print(KK)#
+	  if (MMLIST[mm]==min(MM1985))  {M01} else if (MMLIST[mm]==min(MM1986)) {M02} else if (MMLIST[mm]>min(MM1985)&MMLIST[mm]<min(MM1986)) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}#
+	}
+MU2A_AUX <- c()#
+	MUA_AUX <- c()#
+	MUJ_AUX <- c()#
+	for (mm in 1:MON)#
+		{#
+	 	MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+	  	MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+	 	MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+		}
+if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}#
+	#1 YEAR OLD ADULT's MEAN FUNCTION#
+	MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-1#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    	#Those less than r1#
+	    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    	#Those between r1 and r2#
+	    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    	#Those after r2#
+	    	if (mm2>r2)#
+	    		{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    		}#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+		print(KK)#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}
+#1 YEAR OLD ADULT's MEAN FUNCTION#
+	MUA <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+	  mmval <- MMLIST[mm]%%12#
+	  yrsold<-1#
+	  strmnth<-min(MM1985)#
+	  strmid<-strmnth/12+1/24+yrsold#
+	  endmid<-strmid+1#
+	  mm2=(mmval/12)+1/24+yrsold#
+	  t<-seq(0,1,0.01)#
+	  g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+	  Isneg<-min(g)#
+	  Isneg2<-max(g)#
+	  if (Isneg<0&Isneg2>0)#
+	  {#
+	    a=T0^2+T1^2#
+		b=2*K0*T0#
+		c=-(T1^2)+K0^2#
+		u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+		u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+		r11=1-acos(u1)/(2*pi)+yrsold#
+		r12=acos(u1)/(2*pi)+yrsold#
+		r21=1-acos(u2)/(2*pi)+yrsold#
+		r22=acos(u2)/(2*pi)+yrsold#
+		roots<-c(r11, r12, r21, r22)#
+		groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+		gmin<-round(groot)#
+		r1<-min(roots[which(gmin==0)])#
+		r2<-max(roots[which(gmin==0)])#
+	    #Regime#
+		zMid1=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    zEnd1=K0*(endmid-r2) + (T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*r2)) - (T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*r2))#
+	    KKyr<-yrsold*(zEnd1+zMid1)#
+	    	#Those less than r1#
+	    	if (mm2<r1) {KK = KKyr + K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    	#Those between r1 and r2#
+	    	if (mm2>r1&mm2<r2) {KK= KKyr + K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    	#Those after r2#
+	    	if (mm2>r2)#
+	    		{#
+	    		zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    		zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    		KK<-zEnd+zMid+KKyr#
+	    		}#
+	  } else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid)) + yrsold*(K0*(endmid-strmid)+(T0/(2*pi))*(sin(2*pi*endmid)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*endmid)-cos(2*pi*strmid)) )}#
+		print(KK)#
+	  if (MMLIST[mm]>max(MM1985)) {M02 + (LINF-M02)*(1-exp(-KK))} else (M01 + (LINF-M01)*(1-exp(-KK)))#
+	}
+MU2A_AUX <- c()#
+	MUA_AUX <- c()#
+	MUJ_AUX <- c()#
+	for (mm in 1:MON)#
+		{#
+	 	MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+	  	MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+	 	MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+		}
+#THE JUVENUILES MEAN FUNCTION#
+	MUJ <- function(mm,K0,T0,T1,LINF,M01,M02)#
+	{#
+		#mm=2#
+		mmval <- MMLIST[mm]%%12#
+	  	yrsold<-0#
+	  	strmnth<-min(MM1985)#
+	  	strmid<-strmnth/12+1/24+yrsold#
+	  	endmid<-strmid+1#
+	  	mm2=(mmval/12)+1/24+yrsold#
+	  	t<-seq(0,1,0.01)#
+		g<-K0+T0*cos(2*pi*t)+T1*sin(2*pi*t)#
+		Isneg<-min(g)#
+		Isneg2<-max(g)#
+	 	if (Isneg<0&Isneg2>0)#
+	  		{#
+	    	a=T0^2+T1^2#
+			b=2*K0*T0#
+			c=-(T1^2)+K0^2#
+			u1=(-b+sqrt(b^2-4*a*c))/(2*a)#
+			u2=(-b-sqrt(b^2-4*a*c))/(2*a)#
+			r11=1-acos(u1)/(2*pi)#
+			r12=acos(u1)/(2*pi)#
+			r21=1-acos(u2)/(2*pi)#
+			r22=acos(u2)/(2*pi)#
+			roots<-c(r11, r12, r21, r22)#
+			groot<-K0+T0*cos(2*pi* roots)+T1*sin(2*pi* roots)#
+			gmin<-round(groot)#
+			r1<-min(roots[which(gmin==0)])#
+			r2<-max(roots[which(gmin==0)])#
+	    	#Regime#
+	    	#Those less than r1#
+	    		if (mm2<r1) {KK = K0*(mm2-strmid) +   (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}#
+	    		#Those between r1 and r2#
+	    		if (mm2>r1&mm2<r2) {KK=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))}#
+	    		#Those after r2#
+	    		if (mm2>r2)#
+	    			{#
+	    			zMid=K0*(r1-strmid) + (T0/(2*pi))*(sin(2*pi*r1)-sin(2*pi*strmid)) - (T1/(2*pi))*(cos(2*pi*r1)-cos(2*pi*strmid))#
+	    			zEnd=K0*(mm2-r2)     + (T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*r2))     - (T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*r2))#
+	    			KK<-zEnd+zMid#
+	    			}#
+	  	} else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	#
+	#print(KK)#
+	  if (MMLIST[mm]==min(MM1985))  {M01} else if (MMLIST[mm]==min(MM1986)) {M02} else if (MMLIST[mm]>min(MM1985)&MMLIST[mm]<min(MM1986)) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}#
+	}
+MU2A_AUX <- c()#
+	MUA_AUX <- c()#
+	MUJ_AUX <- c()#
+	for (mm in 1:MON)#
+		{#
+	 	MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+	  	MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+	 	MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+		}
+# Mean function for calcuating the mean length for the current month#
+# ------------------------------------------------------------------#
+MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
+			  yrs.old, str.mnth) {#
+  # Computes the mean length of the distribution for the current month#
+  # based on an integration over the seasonal curve from a von Bertal#
+  # anffy growth model.#
+  ##
+  # Args:#
+  #  month:    Current month to calulate mean at. Numbered from Jan=0#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  linf:     Asymptotic length#
+  #  mu.yr.1:  First month's average length yr 1#
+  #  mu.yr.2:  First month's average length yr 2#
+  #  yrs.old:  How old the individuals in this group are#
+  #  str.mnth: The month that we start calculating means for #
+  ##
+  # Returns:#
+  #  Mean length for the month in the current iteration#
+  # Test values #
+  # month    = 1 #
+  # k0       = 1#
+  # theta.1  = 2 #
+  # theta.2  = 2 #
+  # linf     = 200#
+  # mu.yr.1  = 40#
+  # mu.yr.2  = 40#
+  # yrs.old  = 1#
+  # str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  print(integral)#
+  # If the months are for the first or second year make sure to#
+  # assign the correct mean length for that year#
+  if (month > 11) {#
+    return(mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral)))#
+  } else {#
+ 	# For the months in the first year #
+    return(mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral)))#
+  }#
+}
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New")#
+source("bsc_seas_integral_func.R")#
+source("bsc_mean_length_func.R")#
+source("bsc_seas_root_func.R")#
+source("bsc_variance_func.R")#
+# Data preliminaries#
+# ------------------#
+#
+# Set the working directories#
+#
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")#
+setwd("BSC_R_code_best/Diff_Variance_Function/")#
+# Read in the data set on the asymptotic males that was gathered through pots#
+#
+lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.big.males.females.dates   <- as.Date(lfd.big.males.females$Date, "%d/%m/%y")#
+lfd.big.males.females.lengths <- lfd.big.males.females$Carapacewidth#
+# Pull out the year and month information from these dates#
+#
+lfd.big.males.females.dates.year   <- format(lfd.big.males.females.dates, '%Y')#
+lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')#
+# Read in the trawl data on males that contains juvenile recruitment and adults#
+#
+lfd.trawl.males.females <- read.table("LFD")#
+# Pull out the lengths and the dates from these data files#
+#
+lfd.trawl.males.females.dates   <- as.Date(lfd.trawl.males.females $Date, #
+									"%d/%m/%Y")#
+lfd.trawl.males.females.lengths <- lfd.trawl.males.females$Carapace.width#
+# Concatenate the necessary elements from each file into a common #
+# dates and lengths array#
+#
+lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)#
+lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)#
+# Pull out the year and month information from these dates#
+lfd.year   <- format(lfd.dates, '%Y')#
+lfd.months <- format(lfd.dates, '%m')#
+# Pull out the years and months that we are interested in #
+# i.e., those that don't contain recruitment#
+#
+str.month.yr.1 <- 2#
+end.month.yr.1 <- 8#
+#
+str.month.yr.2 <- 2#
+end.month.yr.2 <- 5#
+#
+lfd.85.feb.aug <- which((lfd.year == '1985') & #
+				  (as.numeric(lfd.months) %in% (str.month.yr.1:end.month.yr.1)))#
+lfd.86.feb.may <- which((lfd.year == '1986') &#
+				  (as.numeric(lfd.months) %in% (str.month.yr.2:end.month.yr.2)))#
+# Initialise the data for the model #
+# ---------------------------------#
+#
+num.months      <- 11													#
+lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		#
+months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month#
+months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11#
+months 			<- c(months.85, months.86)#
+months.lst      <- as.numeric(names(table(months)))	#
+# Initialise the parameters of the model #
+# --------------------------------------#
+num.inds <- length(months)					# Number of individuals we have#
+pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1#
+pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2#
+k0       <- 1		 						# K0 average K#
+linf     <- 200								# Asym length#
+mu.yr.1  <- 40								# First month's average length yr 1#
+mu.yr.2  <- 40								# First month's average length yr 2#
+theta.1  <- 1.0	     						# Seasonality parameter 1#
+theta.2  <- 1.0								# Seasonality parameter 2#
+var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector#
+# Initialise the taus #
+# -------------------	#
+#
+# There may be a better way to do this but does each tau get calculated for#
+# each individual in each month#
+#
+tau.list <- list()#
+for (mm in 1:num.months)#
+	{#
+  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)#
+	}#
+# Initialise the means for each of the three groups#
+# -------------------------------------------------#
+#
+# Function paramters are month, k0, theta 1, theta 2, Linf, mean yr 1, #
+# mean yr 2, years old, start month or first month included#
+#
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+for (mm in 1:num.months)#
+  {#
+    #mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    #mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mm.val
+month    = 1 #
+  k0       = 1#
+  theta.1  = 2 #
+  theta.2  = 2 #
+  linf     = 200#
+  mu.yr.1  = 40#
+  mu.yr.2  = 40#
+  yrs.old  = 1#
+  str.mnth = 1
+mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old
+mm.val
+time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+print(integral)
+str.mid
+mm.val
+time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)
+root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]
+root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]
+int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)
+int.root.1
+int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)
+int.root.2
+int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)
+int.yrs.prvs
+KKyr
+month    = 2 #
+  k0       = 1#
+  theta.1  = 2 #
+  theta.2  = 2 #
+  linf     = 200#
+  mu.yr.1  = 40#
+  mu.yr.2  = 40#
+  yrs.old  = 1#
+  str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old
+mm.val
+str.mid
+if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+print(integral)
+str.mid
+str.mid
+mm.val
+SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
+int.yrs.prvs
+print(integral)
+# Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs #
+                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }
+integral
+SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
+theta.1
+int.yrs.prvs #
+                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
+integral = int.yrs.prvs + #
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
+integral
+month    = 2 #
+  k0       = 1#
+  theta.1  = 2 #
+  theta.2  = 2 #
+  linf     = 200#
+  mu.yr.1  = 40#
+  mu.yr.2  = 40#
+  yrs.old  = 1#
+  str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs + #
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs +#
+                   SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  print(integral)
+month    = 1 #
+  k0       = 1#
+  theta.1  = 2 #
+  theta.2  = 2 #
+  linf     = 200#
+  mu.yr.1  = 40#
+  mu.yr.2  = 40#
+  yrs.old  = 1#
+  str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs + #
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs +#
+                   SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  print(integral)
+# Mean function for calcuating the mean length for the current month#
+# ------------------------------------------------------------------#
+MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
+			  yrs.old, str.mnth) {#
+  # Computes the mean length of the distribution for the current month#
+  # based on an integration over the seasonal curve from a von Bertal#
+  # anffy growth model.#
+  ##
+  # Args:#
+  #  month:    Current month to calulate mean at. Numbered from Jan=0#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  linf:     Asymptotic length#
+  #  mu.yr.1:  First month's average length yr 1#
+  #  mu.yr.2:  First month's average length yr 2#
+  #  yrs.old:  How old the individuals in this group are#
+  #  str.mnth: The month that we start calculating means for #
+  ##
+  # Returns:#
+  #  Mean length for the month in the current iteration#
+  # Test values #
+  month    = 1 #
+  k0       = 1#
+  theta.1  = 2 #
+  theta.2  = 2 #
+  linf     = 200#
+  mu.yr.1  = 40#
+  mu.yr.2  = 40#
+  yrs.old  = 1#
+  str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs + #
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs +#
+                   SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  print(integral)#
+  # If the months are for the first or second year make sure to#
+  # assign the correct mean length for that year#
+  if (month > 11) {#
+    return(mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral)))#
+  } else {#
+ 	# For the months in the first year #
+    return(mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral)))#
+  }#
+}
+for (mm in 1:num.months)#
+  {#
+    #mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    #mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+# Mean function for calcuating the mean length for the current month#
+# ------------------------------------------------------------------#
+MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
+			  yrs.old, str.mnth) {#
+  # Computes the mean length of the distribution for the current month#
+  # based on an integration over the seasonal curve from a von Bertal#
+  # anffy growth model.#
+  ##
+  # Args:#
+  #  month:    Current month to calulate mean at. Numbered from Jan=0#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  linf:     Asymptotic length#
+  #  mu.yr.1:  First month's average length yr 1#
+  #  mu.yr.2:  First month's average length yr 2#
+  #  yrs.old:  How old the individuals in this group are#
+  #  str.mnth: The month that we start calculating means for #
+  ##
+  # Returns:#
+  #  Mean length for the month in the current iteration#
+  # Test values #
+  # month    = 1 #
+  # k0       = 1#
+  # theta.1  = 2 #
+  # theta.2  = 2 #
+  # linf     = 200#
+  # mu.yr.1  = 40#
+  # mu.yr.2  = 40#
+  # yrs.old  = 1#
+  # str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs + #
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs +#
+                   SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  print(integral)#
+  # If the months are for the first or second year make sure to#
+  # assign the correct mean length for that year#
+  if (month > 11) {#
+    return(mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral)))#
+  } else {#
+ 	# For the months in the first year #
+    return(mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral)))#
+  }#
+}
+for (mm in 1:num.months)#
+  {#
+    #mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    #mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.1.yr
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+# Mean function for calcuating the mean length for the current month#
+# ------------------------------------------------------------------#
+MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
+			  yrs.old, str.mnth) {#
+  # Computes the mean length of the distribution for the current month#
+  # based on an integration over the seasonal curve from a von Bertal#
+  # anffy growth model.#
+  ##
+  # Args:#
+  #  month:    Current month to calulate mean at. Numbered from Jan=0#
+  #  k0:       Mean  k paramter for VB model#
+  #  theta.1:  Seasonality parameter 1#
+  #  theta.2:  Seasonality parameter 1#
+  #  linf:     Asymptotic length#
+  #  mu.yr.1:  First month's average length yr 1#
+  #  mu.yr.2:  First month's average length yr 2#
+  #  yrs.old:  How old the individuals in this group are#
+  #  str.mnth: The month that we start calculating means for #
+  ##
+  # Returns:#
+  #  Mean length for the month in the current iteration#
+  # Test values #
+  # month    = 1 #
+  # k0       = 1#
+  # theta.1  = 2 #
+  # theta.2  = 2 #
+  # linf     = 200#
+  # mu.yr.1  = 40#
+  # mu.yr.2  = 40#
+  # yrs.old  = 1#
+  # str.mnth = 1#
+  # Set each of the months to be the middle of the month (1/24 to be used#
+  # with the seasonal function.#
+  mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old#
+  str.mid <- str.mnth / 12 + 1 / 24 + yrs.old#
+  end.mid <- 1 + 1 / 24 + yrs.old#
+  # Assess whether the parameters at this update cross the y=0 axis#
+  # This will allow us to assess whether we need to calculate roots #
+  # for the seasonal function or not#
+  time      <- seq(0, 1, 0.01)#
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time)#
+  is.neg.1  <- min(seas.func)#
+  is.neg.2  <- max(seas.func)#
+  if (is.neg.1 < 0 & is.neg.2 > 0) {#
+	# Calculate the roots of the seasonal function #
+    root.1 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[1]#
+    root.2 <- SeasRootCalc(k0, theta.1, theta.2, yrs.old)[2]#
+	# Given the roots calculate the integral over the previous years#
+	# This is equal to the integral up to the first root + the in#
+	int.root.1   <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+	int.root.2   <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  end.mid)#
+	int.yrs.prvs <- yrs.old * (int.root.1 + int.root.2)#
+    # Integral for those months less than root 1#
+    if (mm.val <= root.1) {#
+      integral = int.yrs.prvs + #
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+    # Integral for those months greater than root 1 but less than root 2#
+#
+    if (mm.val > root.1 & mm.val < root.2) {#
+    	integral = int.yrs.prvs +#
+                   SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+    }#
+    # Integral for those months less than root 1#
+    if (mm.val >= root.2) {#
+       int.root.1.1 <- SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)#
+       int.root.2.1 <- SeasIntegFunc(k0, theta.1, theta.2, root.2,  mm.val)#
+	   integral     <- int.root.1.1 + int.root.2.1 + int.yrs.prvs#
+	  }#
+    } else {#
+    # If the integral doesn't have a negative component#
+    integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)#
+    }#
+  #print(integral)#
+  # If the months are for the first or second year make sure to#
+  # assign the correct mean length for that year#
+  if (month > 11) {#
+    return(mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral)))#
+  } else {#
+ 	# For the months in the first year #
+    return(mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral)))#
+  }#
+}
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in 1:num.months)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.2.yr
+mean.1.yr
+mean.0.yr
+MU2A_AUX <- c()#
+	MUA_AUX <- c()#
+	MUJ_AUX <- c()#
+	for (mm in 1:MON)#
+		{#
+	 	MU2A_AUX[mm] <- MU2A(mm,K0,T0,T1,LINF,M01,M02)#
+	  	MUA_AUX[mm] <- MUA(mm,K0,T0,T1,LINF,M01,M02)#
+	 	MUJ_AUX[mm] <- MUJ(mm,K0,T0,T1,LINF,M01,M02)#
+		}
+MUJ_AUX
+1:MON
+months.lst
+mean.2.yr <- c()#
+mean.1.yr <- c()#
+mean.0.yr <- c()#
+#
+for (mm in months.lst)#
+  {#
+    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)#
+    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)#
+    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	#
+  }
+mean.0.yr
+months.lst
+(mm in months.lst

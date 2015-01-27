@@ -7,7 +7,7 @@
 	#Set the necessary working directories
 	
 	#setwd("/Users/uqllloyd/Dropbox/AAUni/APhD/Blueswimmer/CrabStuff2withMMAlg/RcodesData")
-	setwd("~/Dropbox/AAUni/APhD/Blueswimmer/BSC_R_code_best/diff_variance_function/")
+	setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/BSC_R_code_best/Diff_Variance_Function")
 	
 	
 	#Remove any old objects
@@ -279,7 +279,7 @@
 	    
 	  	} else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	
 	
-	
+	print(KK)
 	  if (MMLIST[mm]==min(MM1985))  {M01} else if (MMLIST[mm]==min(MM1986)) {M02} else if (MMLIST[mm]>min(MM1985)&MMLIST[mm]<min(MM1986)) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}
 	}
 	

@@ -23,13 +23,24 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
   # Returns:
   #  Mean length for the month in the current iteration
   
+  # Test values 
   
+  # month    = 1 
+  # k0       = 1
+  # theta.1  = 2 
+  # theta.2  = 2 
+  # linf     = 200
+  # mu.yr.1  = 40
+  # mu.yr.2  = 40
+  # yrs.old  = 1
+  # str.mnth = 1
+			  
   # Set each of the months to be the middle of the month (1/24 to be used
   # with the seasonal function.
   
   mm.val  <- (month %% 12) / 12 + 1 / 24 + yrs.old
   str.mid <- str.mnth / 12 + 1 / 24 + yrs.old
-  end.mid <- str.mid + 1
+  end.mid <- 1 + 1 / 24 + yrs.old
 
 
   # Assess whether the parameters at this update cross the y=0 axis
@@ -62,16 +73,16 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
     
     if (mm.val <= root.1) {
     	
-      integral = int.yrs.prvs 
-                 + SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
+      integral = int.yrs.prvs + 
+                 SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
     }
 	    	
     # Integral for those months greater than root 1 but less than root 2
 
     if (mm.val > root.1 & mm.val < root.2) {
     	
-    	integral = int.yrs.prvs 
-                   + SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)
+    	integral = int.yrs.prvs +
+                   SeasIntegFunc(k0, theta.1, theta.2, str.mid, root.1)
     }
 	    
     # Integral for those months less than root 1
@@ -88,18 +99,25 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
     # If the integral doesn't have a negative component
     
     integral = SeasIntegFunc(k0, theta.1, theta.2, str.mid, mm.val)
+    
     }
-	
-	 
+ 
+  #print(integral)
+  
+  # If the months are for the first or second year make sure to
+  # assign the correct mean length for that year
+  	 
   if (month > 11) {
     
-    mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral))
+    return(mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral)))
     
   } else {
  	
  	# For the months in the first year 
-    mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral))
+ 	
+    return(mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral)))
+    
   }
 	
-	
+  
 }
