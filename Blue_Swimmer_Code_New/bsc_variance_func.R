@@ -2,7 +2,7 @@
 # -------------------------------------------------------------------
 
 
-Variance <- function(month, var.par.1, var.par.2, var.par.3, var.par.4, mean.length) {
+BscVar <- function(month, var.par.1, var.par.2, var.par.3, var.par.4, mean.length) {
 	
   # Computes the variance of the distribution for the current month
   # based on a bespoke varinace function that is positive in x and y.

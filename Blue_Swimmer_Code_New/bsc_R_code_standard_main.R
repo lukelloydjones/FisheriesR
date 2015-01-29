@@ -3,7 +3,7 @@
 ###############################################################################
 ###                                                                         ###
 ###     SCRIPT TO IMPLEMENT ALGORITHM FOR SOLVING FOR GROWTH PARAMETERS     ###
-###	    VIA THE METHOD OUTLINED IN LLOYD-JONES ET AL. USES AN MM ALGORI     ###
+###     VIA THE METHOD OUTLINED IN LLOYD-JONES ET AL. USES AN MM ALGORI     ###
 ###     THM AND THE OPTIM FUNCTION TO OPTIMISE OVER LENGTH FREQUENCY DA     ###
 ###     TA SETS.                                                            ###
 ###                                                                         ###	
@@ -94,27 +94,27 @@ lfd.86.feb.may <- which((lfd.year == '1986') &
 # Initialise the data for the model 
 # ---------------------------------
 
-num.months      <- 11													
-lfd.lengths.sub <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		
-months.85		<- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month
-months.86 		<- as.numeric(lfd.months[lfd.86.feb.may]) + 11
-months 			<- c(months.85, months.86)
-months.lst      <- as.numeric(names(table(months)))	
+num.months       <- 11													
+lengths          <- lfd.lengths[c(lfd.85.feb.aug, lfd.86.feb.may)]		
+months.85        <- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month
+months.86        <- as.numeric(lfd.months[lfd.86.feb.may]) + 11
+months           <- c(months.85, months.86)
+months.lst       <- as.numeric(names(table(months)))	
 
 
 # Initialise the parameters of the model 
 # --------------------------------------
 	
-num.inds <- length(months)					# Number of individuals we have
-pi.1     <- rep(1/3, num.months)			# Pi mixing prop group 1
-pi.2     <- rep(1/3, num.months)			# Pi mixing prop group 2
-k0       <- 1		 						# K0 average K
-linf     <- 200								# Asym length
-mu.yr.1  <- 40								# First month's average length yr 1
-mu.yr.2  <- 40								# First month's average length yr 2
-theta.1  <- 1.0	     						# Seasonality parameter 1
-theta.2  <- 1.0								# Seasonality parameter 2
-var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
+num.inds <- length(months)                    # Number of individuals we have
+pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
+pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
+k0       <- 1                                 # K0 average K
+linf     <- 200                               # Asym length
+mu.yr.1  <- 40                                # First month's average length yr 1
+mu.yr.2  <- 40                                # First month's average length yr 2
+theta.1  <- 1.0                               # Seasonality parameter 1
+theta.2  <- 1.0                               # Seasonality parameter 2
+var.pars <- c(5, 1/100, 3, 1)                 # Variance function parameter vector
 
 
 # Initialise the taus 
@@ -149,13 +149,7 @@ for (mm in months.lst)
 
 	
 	
-	> MU2A_AUX
- [1] 178.3464 180.3816 182.0983 183.5115 184.6750 185.6661 186.5674 178.3464 180.3816 182.0983 183.5115
-> MUA_AUX
- [1] 141.1393 146.6717 151.3381 155.1795 158.3424 161.0365 163.4865 141.1393 146.6717 151.3381 155.1795
-> MUJ_AUX
- [1]  40.00000  55.03863  67.72336  78.16521  86.76302  94.08611 100.74605  40.00000  55.03863  67.72336
-[11]  78.16521
+
 	
 	
 	
