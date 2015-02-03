@@ -5,24 +5,24 @@ LogLikelihood <- function(mm) {
   # Calculates the log likelihood 
   #
   # Args:
-  #  k0:       Mean  k paramter for VB model
-  #  theta.1:  Seasonality parameter 1
-  #  theta.2:  Seasonality parameter 1
-  #  time.var  time variable
+  #  mm: Index for which month we are up to. Not the month itself
   #
   # Returns:
-  #  The log likelihood
-  
+  #  The log likelihood for each month
+
   lengths.sub    <- lengths[which(months == months.lst[mm])]
-  log.like.grp.1 <- pi.1[mm] * dnorm(LL2, MU2A_AUX[mm], sqrt(BscVar(mm, var.pars, K0, T0,T1,LINF,M01,M02)))
-  log.like.grp.2 <- pi.2[mm] * dnorm(LL2,  MUA_AUX[mm], sqrt(BscVar(mm,  var.pars, K0, T0,T1,LINF,M01,M02)))
- 
-  log.like.grp.3 <- (1- (pi.1[mm] + pi.2[mm])) * dnorm(LL2,MUJ_AUX[mm],sqrt(VARJ(mm,VV,K0,T0,T1,LINF,M01,M02)))
-  log.like <- sum(log(log.like.grp.1 + log.like.grp.2 + log.like.grp.3))
+  log.like.grp.1 <- pi.1[mm] * dnorm(lengths.sub, mean.2.yr[mm], sqrt(var.2.yr[mm]))
+  log.like.grp.2 <- pi.2[mm] * dnorm(lengths.sub, mean.1.yr[mm], sqrt(var.1.yr[mm]))
+  log.like.grp.3 <- pi.3[mm] * dnorm(lengths.sub, mean.0.yr[mm], sqrt(var.0.yr[mm]))
+  log.like       <- sum(log(log.like.grp.1 + log.like.grp.2 + log.like.grp.3))
+  
+  
+  return(log.like)
+
 }
 
+# g1 <- list(pi = , mean = , var = )
+# my_groups <- list(g1 = g1, g2 = g1, g3 )	  
+# logLik <- function(group, mm) group$pi[mm] * dnorm(lengths.sub, group$mean[mm], sqrt(group$var[mm]))
 
-	  
-	  for (mm in 1:MON) {
-	
-	  }
+# Map(logLik, my_group, list_of_mm)

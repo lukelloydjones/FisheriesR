@@ -47,8 +47,8 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
   # This will allow us to assess whether we need to calculate roots 
   # for the seasonal function or not
   
-  time      <- seq(0, 1, 0.01)
-  seas.func <- SeasFunc(k0, theta.1, theta.2, time)
+  time.var  <- seq(0, 1, 0.01)
+  seas.func <- SeasFunc(k0, theta.1, theta.2, time.var)
   is.neg.1  <- min(seas.func)
   is.neg.2  <- max(seas.func)
 	  

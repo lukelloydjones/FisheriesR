@@ -224,7 +224,6 @@ lfd.86.feb.may
 lfd.months[lfd.86.feb.may]
 as.numeric(lfd.months)
 lfd.lengths.sub
-lfd.lengths.sub
 lfd.months[lfd.85.feb.aug]
 lfd.months
 as.numeric(lfd.months)

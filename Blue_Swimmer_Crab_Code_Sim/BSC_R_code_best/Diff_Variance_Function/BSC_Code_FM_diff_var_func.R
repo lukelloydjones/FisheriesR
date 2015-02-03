@@ -279,7 +279,7 @@
 	    
 	  	} else {KK=K0*(mm2-strmid)+(T0/(2*pi))*(sin(2*pi*mm2)-sin(2*pi*strmid))-(T1/(2*pi))*(cos(2*pi*mm2)-cos(2*pi*strmid))}	
 	
-	print(KK)
+	# print(KK)
 	  if (MMLIST[mm]==min(MM1985))  {M01} else if (MMLIST[mm]==min(MM1986)) {M02} else if (MMLIST[mm]>min(MM1985)&MMLIST[mm]<min(MM1986)) {M01 + (LINF-M01)*(1-exp(-KK))} else {M02 + (LINF-M02)*(1-exp(-KK))}
 	}
 	

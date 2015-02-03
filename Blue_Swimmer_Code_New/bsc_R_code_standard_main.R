@@ -23,6 +23,9 @@ source("bsc_seas_integral_func.R")
 source("bsc_mean_length_func.R")
 source("bsc_seas_root_func.R")
 source("bsc_variance_func.R")
+source("bsc_log_likelihood_func.R")
+source("bsc_pi_calc_func.R")
+source("bsc_mean_var_optim_func.R")
 
 
 # Data preliminaries
@@ -100,7 +103,7 @@ months.85        <- as.numeric(lfd.months[lfd.85.feb.aug]) - 1 # Jan = 0th month
 months.86        <- as.numeric(lfd.months[lfd.86.feb.may]) + 11
 months           <- c(months.85, months.86)
 months.lst       <- as.numeric(names(table(months)))	
-
+num.months.seq   <- seq(1, num.months)
 
 # Initialise the parameters of the model 
 # --------------------------------------
@@ -108,63 +111,119 @@ months.lst       <- as.numeric(names(table(months)))
 num.inds <- length(months)                    # Number of individuals we have
 pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
 pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
+pi.3     <- (1- (pi.1 + pi.2))                # Pi group 3. Diff from 1
 k0       <- 1                                 # K0 average K
 linf     <- 200                               # Asym length
 mu.yr.1  <- 40                                # First month's average length yr 1
-mu.yr.2  <- 40                                # First month's average length yr 2
+mu.yr.2  <- 60                                # First month's average length yr 2
 theta.1  <- 1.0                               # Seasonality parameter 1
 theta.2  <- 1.0                               # Seasonality parameter 2
-var.pars <- c(5, 1/100, 3, 1)                 # Variance function parameter vector
+var.pars <- c(5, 1/100, 3, 1)                 # Variance fun parameter vector
+pars     <- c(k0, theta.1, theta.2, linf,     # Parameters in a vector
+              mu.yr.1, mu.yr.2, var.pars) 
 
 
-# Initialise the taus 
-# -------------------	
+# Initialise the likelihood and set tolerence
+# -------------------------------------------
 
-# There may be a better way to do this but does each tau get calculated for
-# each individual in each month
-
-tau.list <- list()
-for (mm in 1:num.months)
-	{
-  		tau.list[[mm]] <- matrix(1/3, num.inds, 3)
-	}
+MeanVarOptim(pars)	
+log.like.full <- -10^5
+tol           <- 10e-6
+log.like.old  <- -10^6	
 
 	
-# Initialise the means for each of the three groups
-# -------------------------------------------------
+# Run while loop over procedure until convergence
+# -----------------------------------------------	
 
-# Function paramters are month, k0, theta 1, theta 2, Linf, mean yr 1, 
-# mean yr 2, years old, start month or first month included
+while (log.like.full - log.like.old > tol) {
 
-mean.2.yr <- c()
-mean.1.yr <- c()
-mean.0.yr <- c()
+  # Shift the current likelihood to the old likelihood
+  
+  log.like.old <- log.like.full 
+  
+  
+  # Calculate the pi for each group in each month
+  # ---------------------------------------------
 
-for (mm in months.lst)
-  {
-    mean.2.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 2, 1)
-    mean.1.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 1, 1)
-    mean.0.yr[mm] <- MeanLength(mm, k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, 0, 1)	
-  }
+  # Returns a vector of pi with each column representing a month
+  # and wach row the groups. Row 1 the largest. Row 2 the yr olds
+  # and row 3 the juveniles
 
-	
+  
+  pi.all <- sapply(num.months.seq, PiCalc)
+  pi.1   <- pi.all[1, ]
+  pi.2   <- pi.all[2, ]
+  pi.3   <- pi.all[3, ]
+
+
+  # Optimise the parameters for the means
+  # -------------------------------------
+  
+  # Initialise and optimise
+  
+  # pars            <- c(k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, var.pars) 
+  optim.means.var <- optim(pars, MeanVarOptim, control = list(maxit = 10000))	
+  
+  # Ask if optim converged
+  
+  print("Did optim converge?")
+  print(optim.means.var$convergence)
+  
+  # Re-define the global parameters
+  
+  k0        <- optim.means.var$par[1]
+  theta.1   <- optim.means.var$par[2]
+  theta.2   <- optim.means.var$par[3]
+  linf      <- optim.means.var$par[4]
+  mu.yr.1   <- optim.means.var$par[5]
+  mu.yr.2   <- optim.means.var$par[6]
+  var.par.1 <- optim.means.var$par[7]
+  var.par.2 <- optim.means.var$par[8]
+  var.par.3 <- optim.means.var$par[9]
+  var.par.4 <- optim.means.var$par[10]
+  pars      <- optim.means.var$par
+  
+  #----------------------------------------------------------------------#
+  
+  #----------------- MAYBE UPDATE WITH A VARIANCE FUNC ------------------#
+  
+  #----------------------------------------------------------------------#
+  # # Calculate the means and variances again
+  
+  # mean.2.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
+                    # theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
+                    # mu.yr.2 = mu.yr.2, yrs.old = 2, str.mnth = 1)       
+  # mean.1.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
+                    # theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
+                    # mu.yr.2 = mu.yr.2, yrs.old = 1, str.mnth = 1)
+  # mean.0.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
+                    # theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
+                    # mu.yr.2 = mu.yr.2, yrs.old = 0, str.mnth = 1)
+                    
+  # # Calculate the variances given the current update of the parameters
+             
+  # var.2.yr  <- sapply(mean.2.yr, BscVar, var.par.1 = var.par.1,
+                   # var.par.2 = var.par.2, var.par.3 = var.par.3,
+                   # var.par.4 = var.par.4)
+  # var.1.yr  <- sapply(mean.1.yr, BscVar, var.par.1 = var.par.1,
+                   # var.par.2 = var.par.2, var.par.3 =  var.par.3,
+                   # var.par.4 =  var.par.4)
+  # var.0.yr  <- sapply(mean.0.yr, BscVar, var.par.1 =  var.par.1,
+                   # var.par.2 = var.par.2, var.par.3 = var.par.3,
+                   # var.par.4 = var.par.4)
+                   
+  
+  # log.like.full <- sum(sapply(num.months.seq, LogLikelihood))
+  
+  
+  # Print out the loglikelihood, tolerance, and parameters
+  
+  print(c(log.like.full, log.like.full - log.like.old))
+  print(pars)
+  
+}
 	
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	
