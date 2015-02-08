@@ -11,15 +11,14 @@ PiCalc <- function(mm) {
   #  A set of pis for each group for the month
   
   # Subset the lengths
-  mm = 2
   lengths.sub    <- lengths[which(months == months.lst[mm])]
   
   # Calculate the inclusion probablities 
   
-  top.1 <- pi.1[mm] * dnorm(lengths.sub, mean.2.yr[mm], var.2.yr[mm])			
-  top.2 <- pi.2[mm] * dnorm(lengths.sub, mean.1.yr[mm], var.1.yr[mm])	
+  top.1 <- pi.1[mm] * dnorm(lengths.sub, mean.2.yr[mm], sqrt(var.2.yr[mm]))			
+  top.2 <- pi.2[mm] * dnorm(lengths.sub, mean.1.yr[mm], sqrt(var.1.yr[mm]))	
   bot   <- top.1 + top.2 + 
-           pi.3[mm] * dnorm(lengths.sub, mean.0.yr[mm], var.0.yr[mm]) 
+           pi.3[mm] * dnorm(lengths.sub, mean.0.yr[mm], sqrt(var.0.yr[mm])) 
   
   # Calculate the tau scores for each group
       

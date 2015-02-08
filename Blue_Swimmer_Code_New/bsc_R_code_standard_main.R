@@ -26,7 +26,7 @@ source("bsc_variance_func.R")
 source("bsc_log_likelihood_func.R")
 source("bsc_pi_calc_func.R")
 source("bsc_mean_var_optim_func.R")
-
+source("bsc_plot_func.R")
 
 # Data preliminaries
 # ------------------
@@ -73,6 +73,23 @@ lfd.dates   <- c(lfd.trawl.males.females.dates,   lfd.big.males.females.dates)
 lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 
+# Subset for males or females
+
+# Males
+
+combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
+males        <- which(combined.sex == 1)
+lfd.dates    <- lfd.dates[males]
+lfd.lengths  <- lfd.lengths[males]
+
+# Females
+
+# combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
+# females      <- which(combined.sex == 2)
+# lfd.dates    <- lfd.dates[females]
+# lfd.lengths  <- lfd.lengths[females]
+
+
 # Pull out the year and month information from these dates
 	
 lfd.year   <- format(lfd.dates, '%Y')
@@ -109,15 +126,15 @@ num.months.seq   <- seq(1, num.months)
 # --------------------------------------
 	
 num.inds <- length(months)                    # Number of individuals we have
-pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
-pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
-pi.3     <- (1- (pi.1 + pi.2))                # Pi group 3. Diff from 1
-k0       <- 1                                 # K0 average K
-linf     <- 200                               # Asym length
+pi.1     <- rep(3/6, num.months)              # Pi mixing prop group 1
+pi.2     <- rep(2/6, num.months)              # Pi mixing prop group 2
+pi.3     <- (1 - (pi.1 + pi.2))               # Pi group 3. Diff from 1
+k0       <- -0.5                               # K0 average K
+linf     <- 220                               # Asym length
 mu.yr.1  <- 40                                # First month's average length yr 1
 mu.yr.2  <- 60                                # First month's average length yr 2
-theta.1  <- 1.0                               # Seasonality parameter 1
-theta.2  <- 1.0                               # Seasonality parameter 2
+theta.1  <- -0.1                              # Seasonality parameter 1
+theta.2  <- 0.4                               # Seasonality parameter 2
 var.pars <- c(5, 1/100, 3, 1)                 # Variance fun parameter vector
 pars     <- c(k0, theta.1, theta.2, linf,     # Parameters in a vector
               mu.yr.1, mu.yr.2, var.pars) 
@@ -127,9 +144,9 @@ pars     <- c(k0, theta.1, theta.2, linf,     # Parameters in a vector
 # -------------------------------------------
 
 MeanVarOptim(pars)	
-log.like.full <- -10^5
+log.like.full <- -10e5
 tol           <- 10e-6
-log.like.old  <- -10^6	
+log.like.old  <- -Inf	
 
 	
 # Run while loop over procedure until convergence
@@ -162,7 +179,7 @@ while (log.like.full - log.like.old > tol) {
   # Initialise and optimise
   
   # pars            <- c(k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, var.pars) 
-  optim.means.var <- optim(pars, MeanVarOptim, control = list(maxit = 10000))	
+  optim.means.var <- optim(pars, MeanVarOptim, control = list(maxit = 100000))	
   
   # Ask if optim converged
   
@@ -183,39 +200,50 @@ while (log.like.full - log.like.old > tol) {
   var.par.4 <- optim.means.var$par[10]
   pars      <- optim.means.var$par
   
-  #----------------------------------------------------------------------#
+  # If male or female we keep thetas fixed so turn off thetas
+  # above and turn those on below. Look in bsc_mean_var_func.R
+  # for more details
   
-  #----------------- MAYBE UPDATE WITH A VARIANCE FUNC ------------------#
+  #max.contr <- 0.04865565
+  #theta.1   <- pars[2]  
+  #theta.2   <- (theta.1 * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
+  #                 cos(2 * pi * max.contr) 
   
-  #----------------------------------------------------------------------#
-  # # Calculate the means and variances again
+  # Calculate the means again for the final likelihood update
   
-  # mean.2.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
-                    # theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
-                    # mu.yr.2 = mu.yr.2, yrs.old = 2, str.mnth = 1)       
-  # mean.1.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
-                    # theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
-                    # mu.yr.2 = mu.yr.2, yrs.old = 1, str.mnth = 1)
-  # mean.0.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
-                    # theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
-                    # mu.yr.2 = mu.yr.2, yrs.old = 0, str.mnth = 1)
+  mean.2.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
+                     theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
+                     mu.yr.2 = mu.yr.2, yrs.old = 2, str.mnth = 1)       
+  mean.1.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
+                     theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
+                     mu.yr.2 = mu.yr.2, yrs.old = 1, str.mnth = 1)
+  mean.0.yr <- sapply(months.lst, MeanLength, k0 = k0, theta.1 = theta.1, 
+                     theta.2 = theta.2, linf = linf , mu.yr.1 = mu.yr.1, 
+                     mu.yr.2 = mu.yr.2, yrs.old = 0, str.mnth = 1)
                     
-  # # Calculate the variances given the current update of the parameters
+  # Calculate the variances again for the final likelihood update
              
-  # var.2.yr  <- sapply(mean.2.yr, BscVar, var.par.1 = var.par.1,
-                   # var.par.2 = var.par.2, var.par.3 = var.par.3,
-                   # var.par.4 = var.par.4)
-  # var.1.yr  <- sapply(mean.1.yr, BscVar, var.par.1 = var.par.1,
-                   # var.par.2 = var.par.2, var.par.3 =  var.par.3,
-                   # var.par.4 =  var.par.4)
-  # var.0.yr  <- sapply(mean.0.yr, BscVar, var.par.1 =  var.par.1,
-                   # var.par.2 = var.par.2, var.par.3 = var.par.3,
-                   # var.par.4 = var.par.4)
+  var.2.yr  <- sapply(mean.2.yr, BscVar, var.par.1 = var.par.1,
+                     var.par.2 = var.par.2, var.par.3 = var.par.3,
+                     var.par.4 = var.par.4)
+  var.1.yr  <- sapply(mean.1.yr, BscVar, var.par.1 = var.par.1,
+                     var.par.2 = var.par.2, var.par.3 =  var.par.3,
+                     var.par.4 =  var.par.4)
+  var.0.yr  <- sapply(mean.0.yr, BscVar, var.par.1 =  var.par.1,
+                     var.par.2 = var.par.2, var.par.3 = var.par.3,
+                     var.par.4 = var.par.4)
                    
   
-  # log.like.full <- sum(sapply(num.months.seq, LogLikelihood))
+  # Evaluate the likelihood
+  
+  log.like.full <- sum(sapply(num.months.seq, LogLikelihood))
   
   
+  # Give a plot of the current state of the model versus the data
+  
+  BscPlot(pars)
+
+
   # Print out the loglikelihood, tolerance, and parameters
   
   print(c(log.like.full, log.like.full - log.like.old))
