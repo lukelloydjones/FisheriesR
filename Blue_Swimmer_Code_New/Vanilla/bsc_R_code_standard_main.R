@@ -126,8 +126,8 @@ num.months.seq   <- seq(1, num.months)
 # --------------------------------------
 	
 num.inds <- length(months)                    # Number of individuals we have
-pi.1     <- rep(3/6, num.months)              # Pi mixing prop group 1
-pi.2     <- rep(2/6, num.months)              # Pi mixing prop group 2
+pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
+pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
 pi.3     <- (1 - (pi.1 + pi.2))               # Pi group 3. Diff from 1
 k0       <- -0.5                               # K0 average K
 linf     <- 220                               # Asym length
@@ -207,7 +207,7 @@ while (log.like.full - log.like.old > tol) {
   #max.contr <- 0.04865565
   #theta.1   <- pars[2]  
   #theta.2   <- (theta.1 * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
-  #                 cos(2 * pi * max.contr) 
+  #              cos(2 * pi * max.contr) 
   
   # Calculate the means again for the final likelihood update
   

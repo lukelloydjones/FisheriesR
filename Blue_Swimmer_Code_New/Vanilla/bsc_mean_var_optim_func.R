@@ -19,8 +19,10 @@ MeanVarOptim <- function(pars) {
   # Declare each of the parameters to names unique to inside the fucntion
   
   k0.fun        <- pars[1]
-  theta.1.fun   <- pars[2]
-  theta.2.fun   <- pars[3]
+  #theta.1.fun   <- pars[2]
+  #theta.2.fun   <- pars[3]
+  theta.1.fun   <- 1.02346756
+  theta.2.fun   <- 0.32301298
   linf.fun      <- pars[4]
   mu.yr.1.fun   <- pars[5]
   mu.yr.2.fun   <- pars[6]

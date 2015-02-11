@@ -20,24 +20,21 @@ BscPlot <- function(pars) {
   
   k0.fun        <- pars[1]
   theta.1.fun   <- pars[2]
-  theta.2.fun   <- pars[3]
-  linf.fun      <- pars[4]
-  mu.yr.1.fun   <- pars[5]
-  mu.yr.2.fun   <- pars[6]
-  var.par.1.fun <- pars[7]
-  var.par.2.fun <- pars[8]
-  var.par.3.fun <- pars[9]
-  var.par.4.fun <- pars[10]
+  linf.fun      <- pars[3]
+  mu.yr.1.fun   <- pars[4]
+  mu.yr.2.fun   <- pars[5]
+  var.par.1.fun <- pars[6]
+  var.par.2.fun <- pars[7]
+  var.par.3.fun <- pars[8]
+  var.par.4.fun <- pars[9]
   
   
   # If male or female we keep the maximum fixed so turn off thetas
   # above and turn those on below
   
-  #max.contr     <- (1 / (2 * pi)) * acos(theta.1 / (sqrt(theta.2 ^ 2 + theta.1 ^ 2)))
-  #max.contr     <- 0.04865565
-  #theta.1.fun   <- pars[2]  
-  #theta.2.fun   <- (theta.1.fun * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
-  #                 cos(2 * pi * max.contr) 
+
+  theta.2.fun   <- (theta.1.fun * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
+                   cos(2 * pi * max.contr) 
                    
                    
   # Declare some plotting parameters
