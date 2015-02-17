@@ -18,7 +18,7 @@ rm(list = ls( ))
 # Source the function files needed
 # --------------------------------
 
-setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New/Vanilla")
+setwd("/ibscratch/wrayvisscher/Luke/Blue_Swimmer_Crab/Crab_Bootstrap")
 source("bsc_seas_integral_func.R")
 source("bsc_mean_length_func.R")
 source("bsc_seas_root_func.R")
@@ -94,8 +94,8 @@ lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 lfd.year   <- format(lfd.dates, '%Y')
 lfd.months <- format(lfd.dates, '%m')
-
-
+ 
+    
 # Pull out the years and months that we are interested in 
 # i.e., those that don't contain recruitment
 
@@ -121,6 +121,18 @@ months.86        <- as.numeric(lfd.months[lfd.86.feb.may]) + 11
 months           <- c(months.85, months.86)
 months.lst       <- as.numeric(names(table(months)))	
 num.months.seq   <- seq(1, num.months)
+
+
+# Bootstrap component
+# -------------------
+
+months.seq = as.numeric(levels(factor(months))) 
+for (i in months.seq) {                                                                                                                          
+  
+  lengths[which(months == i)] = sample(lengths[which(months == i)],
+                                replace = T)
+                                                                                                                            }
+                                                                                                                            
 
 # Initialise the parameters of the model 
 # --------------------------------------
@@ -242,7 +254,7 @@ while (log.like.full - log.like.old > tol) {
   
   # Give a plot of the current state of the model versus the data
   
-  BscPlot(pars)
+  # BscPlot(pars)
 
 
   # Print out the loglikelihood, tolerance, and parameters
@@ -251,8 +263,10 @@ while (log.like.full - log.like.old > tol) {
   print(pars)
   
 }
-	
 
+
+out <- paste0("Combined/pars_", sample(seq(1, 10e6), 1))
+write.table(pars, out, quote = F)
 	
 	
 	

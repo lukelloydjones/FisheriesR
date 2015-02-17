@@ -18,15 +18,15 @@ rm(list = ls( ))
 # Source the function files needed
 # --------------------------------
 
-setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New/Vanilla")
-source("bsc_seas_integral_func.R")
-source("bsc_mean_length_func.R")
-source("bsc_seas_root_func.R")
-source("bsc_variance_func.R")
-source("bsc_log_likelihood_func.R")
-source("bsc_pi_calc_func.R")
-source("bsc_mean_var_optim_func.R")
-source("bsc_plot_func.R")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New/Constrained_Max/")
+source("bsc_cm_seas_integral_func.R")
+source("bsc_cm_mean_length_func.R")
+source("bsc_cm_seas_root_func.R")
+source("bsc_cm_variance_func.R")
+source("bsc_cm_log_likelihood_func.R")
+source("bsc_cm_pi_calc_func.R")
+source("bsc_cm_mean_var_optim_func.R")
+source("bsc_cm_plot_func.R")
 
 # Data preliminaries
 # ------------------
@@ -77,10 +77,10 @@ lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 # Males
 
-# combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
-# males        <- which(combined.sex == 1)
-# lfd.dates    <- lfd.dates[males]
-# lfd.lengths  <- lfd.lengths[males]
+combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
+males        <- which(combined.sex == 1)
+lfd.dates    <- lfd.dates[males]
+lfd.lengths  <- lfd.lengths[males]
 
 # Females
 
@@ -91,7 +91,7 @@ lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 
 # Pull out the year and month information from these dates
-
+	
 lfd.year   <- format(lfd.dates, '%Y')
 lfd.months <- format(lfd.dates, '%m')
 
@@ -125,20 +125,27 @@ num.months.seq   <- seq(1, num.months)
 # Initialise the parameters of the model 
 # --------------------------------------
 	
-num.inds <- length(months)                    # Number of individuals we have
-pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
-pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
-pi.3     <- (1 - (pi.1 + pi.2))               # Pi group 3. Diff from 1
-k0       <- 3                                 # K0 average K
-linf     <- 200                               # Asym length
-mu.yr.1  <- 40                                # First month's average length yr 1
-mu.yr.2  <- 60                                # First month's average length yr 2
-theta.1  <- -0.8                              # Seasonality parameter 1
-theta.2  <- 0.2                               # Seasonality parameter 2
-var.pars <- c(5, 1/100, 3, 1)                 # Variance fun parameter vector
-pars     <- c(k0, theta.1, theta.2, linf,     # Parameters in a vector
+num.inds <- length(months)                 # Number of individuals we have
+pi.1     <- rep(1/3, num.months)           # Pi mixing prop group 1
+pi.2     <- rep(1/3, num.months)           # Pi mixing prop group 2
+pi.3     <- (1 - (pi.1 + pi.2))            # Pi group 3. Diff from 1
+k0       <- 0.15                              # K0 average K
+linf     <- 220                            # Asym length
+mu.yr.1  <- 40                             # First month's average length yr 1
+mu.yr.2  <- 60                             # First month's average length yr 2
+theta.1  <- 0.2                     # Seasonality parameter 1
+theta.1.comb <- 1.02346756   
+theta.2.comb <- 0.32301298
+max.contr    <- (1 / (2 * pi)) * 
+                acos(theta.1.comb /
+                (sqrt(theta.2.comb ^ 2 + 
+                theta.1.comb ^ 2)))        # Calculates max of seas curve
+theta.2   <- (theta.1 * (sqrt(1 - cos(2 * 
+              pi * max.contr)^2))) /
+              cos(2 * pi * max.contr)      # Theta 2 constrained by max 
+var.pars <- c(5, 1/100, 3, 1)              # Variance fun parameter vector
+pars     <- c(k0, theta.1, linf,           # Parameters in a vector. No theta.2
               mu.yr.1, mu.yr.2, var.pars) 
-
 
 
 # Initialise the likelihood and set tolerence
@@ -191,24 +198,21 @@ while (log.like.full - log.like.old > tol) {
   
   k0        <- optim.means.var$par[1]
   theta.1   <- optim.means.var$par[2]
-  theta.2   <- optim.means.var$par[3]
-  linf      <- optim.means.var$par[4]
-  mu.yr.1   <- optim.means.var$par[5]
-  mu.yr.2   <- optim.means.var$par[6]
-  var.par.1 <- optim.means.var$par[7]
-  var.par.2 <- optim.means.var$par[8]
-  var.par.3 <- optim.means.var$par[9]
-  var.par.4 <- optim.means.var$par[10]
+  linf      <- optim.means.var$par[3]
+  mu.yr.1   <- optim.means.var$par[4]
+  mu.yr.2   <- optim.means.var$par[5]
+  var.par.1 <- optim.means.var$par[6]
+  var.par.2 <- optim.means.var$par[7]
+  var.par.3 <- optim.means.var$par[8]
+  var.par.4 <- optim.means.var$par[9]
   pars      <- optim.means.var$par
   
   # If male or female we keep thetas fixed so turn off thetas
   # above and turn those on below. Look in bsc_mean_var_func.R
   # for more details
-  
-  #max.contr <- 0.04865565
-  #theta.1   <- pars[2]  
-  #theta.2   <- (theta.1 * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
-  #              cos(2 * pi * max.contr) 
+
+  theta.2   <- (theta.1 * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
+                cos(2 * pi * max.contr) 
   
   # Calculate the means again for the final likelihood update
   

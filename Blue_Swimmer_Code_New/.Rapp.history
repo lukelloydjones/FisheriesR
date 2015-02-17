@@ -367,3 +367,120 @@ mean_2.yr <- MeanLength(3, k0, theta.1, theta.2, linf, mu.yr.1,#
 mean_2.yr
 mu.yr.1
 linf
+round(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 3)
+signif(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 3)
+signif(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 1)
+signif(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 2)
+signif(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 3)
+x <- signif(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 3)
+paste(x, collapse = '&')
+paste(x, sep = " ",collapse = '&')
+paste(x, sep = " ",collapse = ' & ')
+x <- signif(c( 0.91543304,   0.87301812, 163.81607045,  59.17434863,  80.12228428 , 11.28362528,   0.01564943, 105.92583187 , -0.3575446), 3)
+paste(x, sep = " ",collapse = ' & ')
+x <- signif(c(0.76840699,    0.73280423,  183.58508215,   75.44432594,   82.69773226,  139.84154930,    0.03583773,  735.87446584, -127.89382950), 3)
+paste(x, sep = " ",collapse = ' & ')
+theta.1.comb <- 1.02346756   #
+theta.2.comb <- 0.32301298#
+max.contr    <- (1 / (2 * pi)) * #
+                acos(theta.1.comb /#
+                (sqrt(theta.2.comb ^ 2 + #
+                theta.1.comb ^ 2)))
+theta1 <- 0.733
+(theta.1 * (sqrt(1 - cos(2 * #
+              pi * max.contr)^2))) /#
+              cos(2 * pi * max.contr)
+(theta.1 * (sqrt(1 - cos(2 * #
+              pi * max.contr)^2))) /#
+              cos(2 * pi * max.contr)
+theta.1 <- 0.733
+(theta.1 * (sqrt(1 - cos(2 * #
+              pi * max.contr)^2))) /#
+              cos(2 * pi * max.contr)
+theta.1 <- 0.87301812
+(theta.1 * (sqrt(1 - cos(2 * #
+              pi * max.contr)^2))) /#
+              cos(2 * pi * max.contr)
+BscVar <- function(var.par.1, var.par.2, var.par.3, var.par.4, mean.length) {#
+  # Computes the variance of the distribution for the current month#
+  # based on a bespoke varinace function that is positive in x and y.#
+  ##
+  # Args:#
+  #  var.par.1:   Variance parameter 1#
+  #  var.par.2:   Variance parameter 2#
+  #  var.par.3:   Variance parameter 3#
+  #  var.par.4:   Variance parameter 4#
+  #  mean.length: Mean length for current month#
+  ##
+  # Returns:#
+  #  Variance for each month#
+  variance = max(var.par.1 * mean.length * exp(-var.par.2 * mean.length) + #
+  exp(var.par.3 * (1 - exp(-var.par.4 * mean.length))), 1)#
+  return(variance)#
+  }
+var.linf <- BscVar(var.par.1.fun, var.par.2.fun, var.par.3.fun, var.par.4.fun, linf.fun)
+x <- signif(c(0.76840699,    0.73280423,  183.58508215,   75.44432594,   82.69773226,  139.84154930,    0.03583773,  735.87446584, -127.89382950), 3)
+pars <- x
+k0.fun        <- pars[1]#
+  theta.1.fun   <- pars[2]#
+  linf.fun      <- pars[3]#
+  mu.yr.1.fun   <- pars[4]#
+  mu.yr.2.fun   <- pars[5]#
+  var.par.1.fun <- pars[6]#
+  var.par.2.fun <- pars[7]#
+  var.par.3.fun <- pars[8]#
+  var.par.4.fun <- pars[9]
+var.linf <- BscVar(var.par.1.fun, var.par.2.fun, var.par.3.fun, var.par.4.fun, linf.fun)
+var.linf
+k0.fun        <- pars[1]#
+  theta.1.fun   <- pars[2]#
+  linf.fun      <- pars[3]#
+  mu.yr.1.fun   <- pars[4]#
+  mu.yr.2.fun   <- pars[5]#
+  var.par.1.fun <- pars[6]#
+  var.par.2.fun <- pars[7]#
+  var.par.3.fun <- pars[8]#
+  var.par.4.fun <- pars[9]#
+  # If male or female we keep the maximum fixed so turn off thetas#
+  # above and turn those on below#
+  theta.2.fun   <- (theta.1.fun * (sqrt(1 - cos(2 * pi * max.contr)^2))) /#
+                   cos(2 * pi * max.contr)
+x <- signif(c( 0.91543304,   0.87301812, 163.81607045,  59.17434863,  80.12228428 , 11.28362528,   0.01564943, 105.92583187 , -0.3575446), 3)
+pars <- x
+var.linf <- BscVar(var.par.1.fun, var.par.2.fun, var.par.3.fun, var.par.4.fun, linf.fun)
+var.linf
+k0.fun        <- pars[1]#
+  theta.1.fun   <- pars[2]#
+  linf.fun      <- pars[3]#
+  mu.yr.1.fun   <- pars[4]#
+  mu.yr.2.fun   <- pars[5]#
+  var.par.1.fun <- pars[6]#
+  var.par.2.fun <- pars[7]#
+  var.par.3.fun <- pars[8]#
+  var.par.4.fun <- pars[9]#
+  # If male or female we keep the maximum fixed so turn off thetas#
+  # above and turn those on below#
+  theta.2.fun   <- (theta.1.fun * (sqrt(1 - cos(2 * pi * max.contr)^2))) /#
+                   cos(2 * pi * max.contr)
+var.linf
+var.linf <- BscVar(var.par.1.fun, var.par.2.fun, var.par.3.fun, var.par.4.fun, linf.fun)
+var.linf
+x <- signif(c(0.89809158,   1.02346756,   0.32301298, 175.83800282,  64.98820684,  80.08088982,  36.26829730,   0.02588519, -41.56944464, 356.30263720), 3)
+pars <- x
+var.par.1.fun <- pars[7]#
+  var.par.2.fun <- pars[8]#
+  var.par.3.fun <- pars[9]#
+  var.par.4.fun <- pars[10]
+linf.fun      <- pars[3]
+var.linf <- BscVar(var.par.1.fun, var.par.2.fun, var.par.3.fun, var.par.4.fun, linf.fun)
+var.linf
+var.par.1.fun
+var.par.2.fun,
+var.par.2.fun
+var.par.3.fun
+var.par.4.fun
+linf.fun
+pars[3]
+linf.fun      <- pars[4]
+var.linf <- BscVar(var.par.1.fun, var.par.2.fun, var.par.3.fun, var.par.4.fun, linf.fun)
+var.linf
