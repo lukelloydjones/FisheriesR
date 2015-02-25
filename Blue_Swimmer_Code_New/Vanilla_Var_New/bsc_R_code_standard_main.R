@@ -18,7 +18,7 @@ rm(list = ls( ))
 # Source the function files needed
 # --------------------------------
 
-setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New/Vanilla")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New/Vanilla_Var_New")
 source("bsc_seas_integral_func.R")
 source("bsc_mean_length_func.R")
 source("bsc_seas_root_func.R")
@@ -35,7 +35,7 @@ source("bsc_plot_func.R")
 # Set the working directories
 
 #setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")
-setwd("~/Dropbox/BSC_R_code_best/Diff_Variance_Function/")
+setwd("~/Dropbox/AAUni/APhD/Blueswimmer/RcodesData/Blue_Swimmer_Crab_Code_Sim/BSC_R_code_best/Diff_Variance_Function")
 
 
 # Read in the data set on the asymptotic males that was gathered through pots
@@ -78,10 +78,10 @@ lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 # Males
 
-# combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
-# males        <- which(combined.sex == 1)
-# lfd.dates    <- lfd.dates[males]
-# lfd.lengths  <- lfd.lengths[males]
+combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
+males        <- which(combined.sex == 1)
+lfd.dates    <- lfd.dates[males]
+lfd.lengths  <- lfd.lengths[males]
 
 # Females
 
@@ -130,13 +130,13 @@ num.inds <- length(months)                    # Number of individuals we have
 pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
 pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
 pi.3     <- (1 - (pi.1 + pi.2))               # Pi group 3. Diff from 1
-k0       <- 3                                 # K0 average K
+k0       <- 0.5                               # K0 average K
 linf     <- 200                               # Asym length
 mu.yr.1  <- 40                                # First month's average length yr 1
 mu.yr.2  <- 60                                # First month's average length yr 2
-theta.1  <- -0.8                              # Seasonality parameter 1
+theta.1  <- 0.2                               # Seasonality parameter 1
 theta.2  <- 0.2                               # Seasonality parameter 2
-var.pars <- c(5, 1/100, 3, 1)                 # Variance fun parameter vector
+var.pars <- c(1, 0.01)                        # Variance fun parameter vector
 pars     <- c(k0, theta.1, theta.2, linf,     # Parameters in a vector
               mu.yr.1, mu.yr.2, var.pars) 
 
@@ -180,7 +180,7 @@ while (log.like.full - log.like.old > tol) {
   
   # Initialise and optimise
   
-  # pars            <- c(k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, var.pars) 
+  #pars            <- c(k0, theta.1, theta.2, linf, mu.yr.1, mu.yr.2, var.pars) 
   optim.means.var <- optim(pars, MeanVarOptim, control = list(maxit = 100000))	
   
   # Ask if optim converged
@@ -198,18 +198,12 @@ while (log.like.full - log.like.old > tol) {
   mu.yr.2   <- optim.means.var$par[6]
   var.par.1 <- optim.means.var$par[7]
   var.par.2 <- optim.means.var$par[8]
-  var.par.3 <- optim.means.var$par[9]
-  var.par.4 <- optim.means.var$par[10]
   pars      <- optim.means.var$par
   
   # If male or female we keep thetas fixed so turn off thetas
   # above and turn those on below. Look in bsc_mean_var_func.R
   # for more details
-  
-  #max.contr <- 0.04865565
-  #theta.1   <- pars[2]  
-  #theta.2   <- (theta.1 * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
-  #              cos(2 * pi * max.contr) 
+
   
   # Calculate the means again for the final likelihood update
   
@@ -226,14 +220,11 @@ while (log.like.full - log.like.old > tol) {
   # Calculate the variances again for the final likelihood update
              
   var.2.yr  <- sapply(mean.2.yr, BscVar, var.par.1 = var.par.1,
-                     var.par.2 = var.par.2, var.par.3 = var.par.3,
-                     var.par.4 = var.par.4)
+                     var.par.2 = var.par.2)
   var.1.yr  <- sapply(mean.1.yr, BscVar, var.par.1 = var.par.1,
-                     var.par.2 = var.par.2, var.par.3 =  var.par.3,
-                     var.par.4 =  var.par.4)
+                     var.par.2 = var.par.2)
   var.0.yr  <- sapply(mean.0.yr, BscVar, var.par.1 =  var.par.1,
-                     var.par.2 = var.par.2, var.par.3 = var.par.3,
-                     var.par.4 = var.par.4)
+                     var.par.2 = var.par.2)
                    
   
   # Evaluate the likelihood
