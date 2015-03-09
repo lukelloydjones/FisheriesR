@@ -78,10 +78,10 @@ lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 # Males
 
-combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
-males        <- which(combined.sex == 1)
-lfd.dates    <- lfd.dates[males]
-lfd.lengths  <- lfd.lengths[males]
+# combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
+# males        <- which(combined.sex == 1)
+# lfd.dates    <- lfd.dates[males]
+# lfd.lengths  <- lfd.lengths[males]
 
 # Females
 
@@ -130,16 +130,15 @@ num.inds <- length(months)                    # Number of individuals we have
 pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
 pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
 pi.3     <- (1 - (pi.1 + pi.2))               # Pi group 3. Diff from 1
-k0       <- 0.5                               # K0 average K
+k0       <- 1                                 # K0 average K
 linf     <- 200                               # Asym length
 mu.yr.1  <- 40                                # First month's average length yr 1
 mu.yr.2  <- 60                                # First month's average length yr 2
-theta.1  <- 0.2                               # Seasonality parameter 1
+theta.1  <- 1                                 # Seasonality parameter 1
 theta.2  <- 0.2                               # Seasonality parameter 2
 var.pars <- c(1, 0.01)                        # Variance fun parameter vector
 pars     <- c(k0, theta.1, theta.2, linf,     # Parameters in a vector
               mu.yr.1, mu.yr.2, var.pars) 
-
 
 
 # Initialise the likelihood and set tolerence

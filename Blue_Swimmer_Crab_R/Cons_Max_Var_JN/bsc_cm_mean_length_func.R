@@ -25,14 +25,15 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
   
   # Test values 
   
-  # month    = 1 
-  # k0       = 1
-  # theta.1  = 2 
-  # theta.2  = 2 
-  # linf     = 200
-  # mu.yr.1  = 40
-  # mu.yr.2  = 40
-  # yrs.old  = 1
+  # month    = 2 
+  # k0       = pars[1]
+  # theta.1  = pars[2]
+  # theta.2  = (theta.1 * (sqrt(1 - cos(2 * pi * max.contr)^2))) /
+                   # cos(2 * pi * max.contr)  
+  # linf     = pars[3]
+  # mu.yr.1  = pars[4]
+  # mu.yr.2  = pars[5]
+  # yrs.old  = 0
   # str.mnth = 1
 			  
   # Set each of the months to be the middle of the month (1/24 to be used

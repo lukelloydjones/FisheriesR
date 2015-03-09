@@ -16,6 +16,7 @@ BscVar <- function(var.par.1, var.par.2, mean.length) {
   #  Variance for each month
   
   variance = max(var.par.1 * mean.length * exp(-var.par.2 * mean.length), 1)
-  
+
+
   return(variance)
   }

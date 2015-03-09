@@ -1,4 +1,4 @@
-# Mean function for calcuating the mean length for the current month#
+Mean function for calcuating the mean length for the current month#
 # ------------------------------------------------------------------#
 MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
 			  yrs.old, str.mnth) {#
@@ -68,7 +68,7 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
     mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral))#
   }#
 }
-# Function to calculate roots of the integral of the VB seasonal curve#
+Function to calculate roots of the integral of the VB seasonal curve#
 # ---------------------------------------------------------------------#
 #
 SeasIntegFunc <- function(k0, theta.1, theta.2, str.time, end.time) {#
@@ -88,7 +88,7 @@ SeasIntegFunc <- function(k0, theta.1, theta.2, str.time, end.time) {#
               (theta.2 / (2 * pi)) * (cos(2 * pi * end.time) - cos(2 * pi * str.time))#
   return(integral)#
 }
-# Function to calculate roots of the seasonal function for the VB model#
+Function to calculate roots of the seasonal function for the VB model#
 # ---------------------------------------------------------------------#
 #
 SeasFunc <- function(k0, theta.1, theta.2, time.var) {#
@@ -138,7 +138,7 @@ SeasRootCalc <- function(k0, theta.1, theta.2, yrs.old) {#
   # Return the roots#
   return(c(r1, r2))#
   }
-# Remove any objects to clear the slate#
+Remove any objects to clear the slate#
 #
 rm(list = ls( ))#
 # Data preliminaries#
@@ -269,7 +269,7 @@ theta.2  <- 2								# Seasonality parameter 2#
 var.pars <- c(5, 1/100, 3, 1)				# Variance function parameter vector
 mean_2.yr <- MeanLength(months.lst, k0, theta.1, theta.2, linf, mu.yr.1,
 mu.yr.2, 2, 1)
-# Mean function for calcuating the mean length for the current month#
+Mean function for calcuating the mean length for the current month#
 # ------------------------------------------------------------------#
 MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, #
 			  yrs.old, str.mnth) {#
@@ -387,9 +387,6 @@ max.contr    <- (1 / (2 * pi)) * #
                 (sqrt(theta.2.comb ^ 2 + #
                 theta.1.comb ^ 2)))
 theta1 <- 0.733
-(theta.1 * (sqrt(1 - cos(2 * #
-              pi * max.contr)^2))) /#
-              cos(2 * pi * max.contr)
 (theta.1 * (sqrt(1 - cos(2 * #
               pi * max.contr)^2))) /#
               cos(2 * pi * max.contr)
