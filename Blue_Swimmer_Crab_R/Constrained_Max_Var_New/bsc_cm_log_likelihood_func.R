@@ -9,7 +9,7 @@ LogLikelihood <- function(mm) {
   #
   # Returns:
   #  The log likelihood for each month
-
+ 
   lengths.sub    <- lengths[which(months == months.lst[mm])]
   log.like.grp.1 <- pi.1[mm] * dnorm(lengths.sub, mean.2.yr[mm], sqrt(var.2.yr[mm]))
   log.like.grp.2 <- pi.2[mm] * dnorm(lengths.sub, mean.1.yr[mm], sqrt(var.1.yr[mm]))

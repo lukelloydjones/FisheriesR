@@ -2,7 +2,7 @@
 # ------------------------------------------------------------------
 
 
-MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2, 
+MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr, 
 			  yrs.old, str.mnth) {
 	
   # Computes the mean length of the distribution for the current month
@@ -15,8 +15,7 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
   #  theta.1:  Seasonality parameter 1
   #  theta.2:  Seasonality parameter 1
   #  linf:     Asymptotic length
-  #  mu.yr.1:  First month's average length yr 1
-  #  mu.yr.2:  First month's average length yr 2
+  #  mu.yr.1:  Vector of starting means for each year modelled
   #  yrs.old:  How old the individuals in this group are
   #  str.mnth: The month that we start calculating means for 
   #
@@ -107,20 +106,11 @@ MeanLength <- function(month, k0, theta.1, theta.2 , linf, mu.yr.1, mu.yr.2,
  
   #print(integral)
   
-  # If the months are for the first or second year make sure to
-  # assign the correct mean length for that year
-  	 
-  if (month > 11) {
-    
-    return(mu.yr.2 + (linf - mu.yr.2) * (1-exp(-integral)))
-    
-  } else {
- 	
- 	# For the months in the first year 
- 	
-    return(mu.yr.1 + (linf - mu.yr.1) * (1-exp(-integral)))
-    
-  }
-	
+  # Depending on the year modelled the starting mean will be different
+  # so we change the value returned depending what month we are calculating
+  # the mean for
+  # Create an index
+  mu.yr.ind <- ceiling(month / 12)	 
+  return(mu.yr[mu.yr.ind] + (linf - mu.yr[mu.yr.ind]) * (1 - exp(-integral)))
   
 }

@@ -18,7 +18,7 @@ rm(list = ls( ))
 # Source the function files needed
 # --------------------------------
 
-setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Code_New/Constrained_Max_Var_New")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_R/Constrained_Max_Var_New/")
 source("bsc_cm_seas_integral_func.R")
 source("bsc_cm_mean_length_func.R")
 source("bsc_cm_seas_root_func.R")
@@ -33,13 +33,13 @@ source("bsc_cm_plot_func.R")
 
 # Set the working directories
 
-#setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_Code_Sim/")
-setwd("~/Dropbox/AAUni/APhD/Blueswimmer/RcodesData/Blue_Swimmer_Crab_Code_Sim/BSC_R_code_best/Diff_Variance_Function")
+setwd("~/Dropbox/Git_Repos/Fisheries_R_Scripts/Blue_Swimmer_Crab_R")
+
 
 
 # Read in the data set on the asymptotic males that was gathered through pots
 
-lfd.big.males.females <- read.table("LFD_bigMalesFem", header = T)
+lfd.big.males.females <- read.table("Data/BSC/bsc_lfd_pot.txt", header = T)
 
 
 # Pull out the lengths and the dates from these data files
@@ -56,7 +56,7 @@ lfd.big.males.females.dates.months <- format(lfd.big.males.females.dates, '%m')
 
 # Read in the trawl data on males that contains juvenile recruitment and adults
 
-lfd.trawl.males.females <- read.table("LFD")
+lfd.trawl.males.females <- read.table("Data/BSC/bsc_lfd_trawl.txt")
 
 
 # Pull out the lengths and the dates from these data files
@@ -77,10 +77,10 @@ lfd.lengths <- c(lfd.trawl.males.females.lengths, lfd.big.males.females.lengths)
 
 #Males
 
-combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
-males        <- which(combined.sex == 1)
-lfd.dates    <- lfd.dates[males]
-lfd.lengths  <- lfd.lengths[males]
+# combined.sex <- c(lfd.trawl.males.females$Sex,   lfd.big.males.females$Sex)
+# males        <- which(combined.sex == 1)
+# lfd.dates    <- lfd.dates[males]
+# lfd.lengths  <- lfd.lengths[males]
 
 # Females
 
@@ -129,11 +129,11 @@ num.inds <- length(months)                    # Number of individuals we have
 pi.1     <- rep(1/3, num.months)              # Pi mixing prop group 1
 pi.2     <- rep(1/3, num.months)              # Pi mixing prop group 2
 pi.3     <- (1 - (pi.1 + pi.2))               # Pi group 3. Diff from 1
-k0       <- 1.03                               # K0 average K
-linf     <- 160                              # Asym length
+k0       <- 1.1                               # K0 average K
+linf     <- 175                               # Asym length
 mu.yr.1  <- 60                                # First month's average length yr 1
 mu.yr.2  <- 80                                # First month's average length yr 2
-theta.1  <- 0.9                              # Seasonality parameter 1
+theta.1  <- 0.9                               # Seasonality parameter 1
 theta.1.comb <- 1.02346756   
 theta.2.comb <- 0.32301298
 max.contr    <- (1 / (2 * pi)) * 
@@ -147,7 +147,7 @@ var.pars <- c(10, 0.015)                        # Variance fun parameter vector
 pars     <- c(k0, theta.1, linf,     # Parameters in a vector
               mu.yr.1, mu.yr.2, var.pars) 
 
-
+pars <- c(1.100000, 1.023468,175.000000,  60.000000,  80.000000, 10.000000,   0.015000)
 
 # Initialise the likelihood and set tolerence
 # -------------------------------------------
@@ -242,7 +242,7 @@ while (log.like.full - log.like.old > tol) {
   
   # Give a plot of the current state of the model versus the data
   
-  BscPlot(pars)
+  #BscPlot(pars)
 
   # Pars including sigma^2 linf and theta 2
   
