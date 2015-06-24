@@ -181,7 +181,8 @@ while (log.like.full - log.like.old > tol) {
 
   pis <- t(sapply(num.months.seq, PiCalc))
 
-
+  TODO: OPTIMISE a and b varinace parameters
+        RERUN PI updates
   # Optimise the parameters for the means
   # -------------------------------------
   
